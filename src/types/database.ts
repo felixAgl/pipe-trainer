@@ -41,6 +41,80 @@ export type Database = {
           },
         ]
       }
+      clients: {
+        Row: {
+          id: string
+          name: string
+          phone: string | null
+          email: string | null
+          notes: string | null
+          photo_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          phone?: string | null
+          email?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          phone?: string | null
+          email?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      workout_plans: {
+        Row: {
+          id: string
+          title: string
+          client_id: string | null
+          plan_data: Json
+          weeks_count: number
+          days_per_week: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          client_id?: string | null
+          plan_data: Json
+          weeks_count?: number
+          days_per_week?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          client_id?: string | null
+          plan_data?: Json
+          weeks_count?: number
+          days_per_week?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_plans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       muscle_groups: {
         Row: {
           created_at: string

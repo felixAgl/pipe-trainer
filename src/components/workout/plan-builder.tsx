@@ -5,8 +5,13 @@ import type { WorkoutDay, WorkoutPlan, WorkoutWeek } from "@/types/workout";
 import { DayEditor } from "@/components/workout/day-editor";
 import { WorkoutDayCard } from "@/components/workout/workout-day-card";
 import { Button } from "@/components/ui/button";
+import { InputField } from "@/components/ui/input-field";
 import { createWorkoutDay, createWorkoutPlan } from "@/lib/plan-factory";
 import { captureNode } from "@/lib/image-capture";
+import { savePlan, updatePlan, fetchPlanById } from "@/lib/plan-repository";
+import { fetchClients } from "@/lib/client-repository";
+import type { ClientRow } from "@/lib/client-repository";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEYS = {
@@ -35,14 +40,42 @@ export function PlanBuilder() {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [planTitle, setPlanTitle] = useState("Plan de Entrenamiento");
+  const [clients, setClients] = useState<ClientRow[]>([]);
+  const [savingDb, setSavingDb] = useState(false);
 
   const captureContainerRef = useRef<HTMLDivElement>(null);
 
   const currentWeek = plan.weeks[activeWeek];
   const currentDay = currentWeek?.days[activeDay];
 
-  // Auto-load plan from localStorage on mount
+  // Load clients for selector
   useEffect(() => {
+    if (!supabase) return;
+    fetchClients()
+      .then(setClients)
+      .catch(() => {});
+  }, []);
+
+  // Auto-load plan from localStorage or from planId URL param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const planId = params.get("planId");
+
+    if (planId) {
+      fetchPlanById(planId).then((loaded) => {
+        if (loaded) {
+          setPlan(loaded);
+          setCurrentPlanId(planId);
+          setPlanTitle(loaded.title || "Plan de Entrenamiento");
+          setToast({ message: "Plan cargado desde DB", type: "success" });
+        }
+      });
+      return;
+    }
+
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
       if (saved) {
@@ -278,6 +311,37 @@ export function PlanBuilder() {
     setGenerating(false);
   }
 
+  // -- Save/Load Supabase --
+  async function handleSaveToDb() {
+    if (!supabase) return;
+    setSavingDb(true);
+    try {
+      if (currentPlanId) {
+        await updatePlan(currentPlanId, {
+          title: planTitle,
+          plan,
+          clientId: selectedClientId,
+        });
+        setToast({ message: "Plan actualizado en DB", type: "success" });
+      } else {
+        const newId = await savePlan({
+          title: planTitle,
+          plan,
+          clientId: selectedClientId,
+        });
+        setCurrentPlanId(newId);
+        setToast({ message: "Plan guardado en DB", type: "success" });
+      }
+    } catch (err) {
+      setToast({
+        message: err instanceof Error ? err.message : "Error guardando",
+        type: "error",
+      });
+    } finally {
+      setSavingDb(false);
+    }
+  }
+
   // -- Save/Load localStorage --
   function handleSavePlan() {
     try {
@@ -364,6 +428,43 @@ export function PlanBuilder() {
               </Button>
             </div>
           </div>
+
+          {/* DB Save Controls */}
+          {supabase && (
+            <div className="flex flex-col gap-3 rounded-lg border border-pt-border bg-pt-card/50 p-3 sm:flex-row sm:items-end sm:gap-4 sm:p-4">
+              <InputField
+                label="Titulo del plan"
+                value={planTitle}
+                onChange={setPlanTitle}
+                placeholder="Nombre del plan"
+                className="sm:max-w-xs"
+              />
+              <div className="flex flex-col gap-1 sm:max-w-xs">
+                <label className="text-xs font-medium text-pt-muted uppercase tracking-wide">
+                  Cliente
+                </label>
+                <select
+                  value={selectedClientId ?? ""}
+                  onChange={(e) => setSelectedClientId(e.target.value || null)}
+                  className="w-full rounded-md border border-pt-border bg-pt-card px-2 py-2 text-sm text-white focus:border-pt-accent focus:outline-none sm:px-3"
+                >
+                  <option value="">Sin cliente</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button onClick={handleSaveToDb} disabled={savingDb || !planTitle.trim()}>
+                {savingDb
+                  ? "Guardando..."
+                  : currentPlanId
+                    ? "Actualizar en DB"
+                    : "Guardar en DB"}
+              </Button>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-md bg-red-900/50 px-4 py-2 text-sm text-red-300">

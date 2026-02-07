@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const NAV_SECTION = {
@@ -102,9 +103,11 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 function SidebarBrand() {
   return (
-    <div className="flex items-center gap-2 border-b border-pt-border px-5 py-5">
-      <span className="text-xl font-black text-pt-accent italic">PT</span>
-      <span className="text-sm font-semibold text-white">PipeTrainer</span>
+    <div className="border-b border-pt-border px-5 py-5">
+      <Link href="/" className="flex items-center gap-2">
+        <Image src="/pt-isotipo.png" alt="PipeTrainer" width={32} height={28} />
+        <span className="text-sm font-semibold text-white">PipeTrainer</span>
+      </Link>
     </div>
   );
 }
@@ -134,10 +137,10 @@ export function Sidebar() {
     <>
       {/* Mobile Header */}
       <header className="flex items-center justify-between border-b border-pt-border bg-pt-card px-4 py-3 lg:hidden">
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-black text-pt-accent italic">PT</span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/pt-isotipo.png" alt="PipeTrainer" width={32} height={28} />
           <span className="text-sm font-semibold text-white">PipeTrainer</span>
-        </div>
+        </Link>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -160,10 +163,10 @@ export function Sidebar() {
           {/* Slide-in Panel */}
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-pt-card shadow-xl">
             <div className="flex items-center justify-between border-b border-pt-border px-5 py-5">
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-pt-accent italic">PT</span>
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/pt-isotipo.png" alt="PipeTrainer" width={32} height={28} />
                 <span className="text-sm font-semibold text-white">PipeTrainer</span>
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

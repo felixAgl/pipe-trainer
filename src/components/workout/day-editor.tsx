@@ -3,6 +3,7 @@
 import type { WorkoutDay, Exercise } from "@/types/workout";
 import { ExerciseRow } from "@/components/workout/exercise-row";
 import { InputField } from "@/components/ui/input-field";
+import { MuscleGroupSelect } from "@/components/workout/muscle-group-select";
 import { Button } from "@/components/ui/button";
 import { createExercise } from "@/lib/plan-factory";
 
@@ -51,10 +52,9 @@ export function DayEditor({ day, onChange, onRemove, canRemove }: DayEditorProps
           <span className="w-fit rounded-md bg-pt-accent px-3 py-1 text-sm font-bold text-black">
             {day.dayLabel}
           </span>
-          <InputField
+          <MuscleGroupSelect
             value={day.muscleGroup}
             onChange={handleMuscleGroupChange}
-            placeholder="Grupo muscular (ej: PIERNA)"
           />
         </div>
         <Button

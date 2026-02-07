@@ -13,6 +13,7 @@ import type { PlanListItem } from "@/lib/plan-repository";
 import { fetchClients } from "@/lib/client-repository";
 import type { ClientRow } from "@/lib/client-repository";
 import { supabase } from "@/lib/supabase";
+import { PT_ISOTIPO_DATA_URL } from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEYS = {
@@ -483,8 +484,9 @@ export function PlanBuilder() {
         <div className="flex flex-col gap-4 sm:gap-6">
           {/* Top Controls */}
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-            <h1 className="text-xl font-bold text-white sm:text-2xl">
-              <span className="font-black italic text-pt-accent">PT</span>{" "}
+            <h1 className="flex items-center gap-2 text-xl font-bold text-white sm:text-2xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={PT_ISOTIPO_DATA_URL} alt="PT" width={28} height={24} className="shrink-0" />
               Plan Builder
             </h1>
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">

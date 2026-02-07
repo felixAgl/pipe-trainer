@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PipeTrainer - Plan Builder",
-  description: "Automated workout plan generator for PipeTrainer fitness coaching",
+  title: "PipeTrainer - Entrenamiento Inteligente",
+  description:
+    "Genera planes de entrenamiento personalizados para tus clientes. Coaching fitness profesional.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

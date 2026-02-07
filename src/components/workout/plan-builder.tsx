@@ -2,18 +2,36 @@
 
 import { useState } from "react";
 import type { WorkoutDay, WorkoutPlan, WorkoutWeek } from "@/types/workout";
+import type { HCTICredentials } from "@/lib/hcti-client";
 import { DayEditor } from "@/components/workout/day-editor";
 import { WorkoutDayCard } from "@/components/workout/workout-day-card";
 import { Button } from "@/components/ui/button";
-import { SelectField } from "@/components/ui/select-field";
+import { InputField } from "@/components/ui/input-field";
 import { createWorkoutDay, createWorkoutPlan } from "@/lib/plan-factory";
+import { buildWorkoutDayHTML, buildWorkoutDayCSS } from "@/lib/template-builder";
+import { generateImage } from "@/lib/hcti-client";
 import { cn } from "@/lib/utils";
+
+const STORAGE_KEYS = {
+  PLAN: "pipe-trainer-plan",
+  CREDENTIALS: "pipe-trainer-credentials",
+} as const;
 
 interface GeneratedImage {
   dayNumber: number;
+  weekNumber: number;
   dayLabel: string;
   muscleGroup: string;
   url: string;
+}
+
+function loadCredentials(): HCTICredentials {
+  if (typeof window === "undefined") return { userId: "", apiKey: "" };
+  const saved = localStorage.getItem(STORAGE_KEYS.CREDENTIALS);
+  if (saved) {
+    return JSON.parse(saved) as HCTICredentials;
+  }
+  return { userId: "", apiKey: "" };
 }
 
 export function PlanBuilder() {
@@ -24,9 +42,17 @@ export function PlanBuilder() {
   const [generating, setGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [credentials, setCredentials] = useState<HCTICredentials>(loadCredentials);
 
   const currentWeek = plan.weeks[activeWeek];
   const currentDay = currentWeek?.days[activeDay];
+
+  // -- Credentials --
+  function handleSaveCredentials() {
+    localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credentials));
+    setShowSettings(false);
+  }
 
   // -- Week Management --
   function handleAddWeek() {
@@ -41,7 +67,6 @@ export function PlanBuilder() {
   function handleRemoveWeek(weekIndex: number) {
     if (plan.weeks.length <= 1) return;
     const weeks = plan.weeks.filter((_, i) => i !== weekIndex);
-    // Renumber
     const renumbered = weeks.map((w, i) => ({ ...w, weekNumber: i + 1 }));
     setPlan({ ...plan, weeks: renumbered });
     if (activeWeek >= renumbered.length) {
@@ -91,7 +116,6 @@ export function PlanBuilder() {
     if (currentWeek.days.length <= 1) return;
     const weeks = [...plan.weeks];
     const days = weeks[activeWeek].days.filter((_, i) => i !== dayIndex);
-    // Renumber
     const renumbered = days.map((d, i) => ({
       ...d,
       dayNumber: i + 1,
@@ -104,36 +128,53 @@ export function PlanBuilder() {
     }
   }
 
-  // -- Image Generation --
+  // -- Client-side Image Generation --
+  async function generateDayImage(
+    day: WorkoutDay,
+    weekNumber: number
+  ): Promise<GeneratedImage | null> {
+    const html = buildWorkoutDayHTML(day, { weekNumber });
+    const css = buildWorkoutDayCSS();
+
+    const result = await generateImage({ html, css }, credentials);
+
+    if (!result.success) {
+      throw new Error(result.error.error);
+    }
+
+    return {
+      dayNumber: day.dayNumber,
+      weekNumber,
+      dayLabel: `S${weekNumber} - ${day.dayLabel}`,
+      muscleGroup: day.muscleGroup,
+      url: result.data.url,
+    };
+  }
+
   async function handleGenerateAll() {
+    if (!credentials.userId || !credentials.apiKey) {
+      setError("Configure your HCTI API credentials first (click Settings)");
+      setShowSettings(true);
+      return;
+    }
+
     setGenerating(true);
     setError(null);
     const allImages: GeneratedImage[] = [];
 
     for (const week of plan.weeks) {
-      const response = await fetch("/api/generate-image?batch=true", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          days: week.days,
-          weekNumber: week.weekNumber,
-        }),
-      });
-
-      if (!response.ok) {
-        setError(`Error generating week ${week.weekNumber}`);
-        setGenerating(false);
-        return;
+      for (const day of week.days) {
+        try {
+          const img = await generateDayImage(day, week.weekNumber);
+          if (img) allImages.push(img);
+        } catch (err) {
+          setError(
+            `Error generating S${week.weekNumber} ${day.dayLabel}: ${err instanceof Error ? err.message : "Unknown error"}`
+          );
+          setGenerating(false);
+          return;
+        }
       }
-
-      const data = await response.json();
-      const successImages = data.images
-        .filter((img: { success: boolean }) => img.success)
-        .map((img: GeneratedImage) => ({
-          ...img,
-          dayLabel: `S${week.weekNumber} - ${img.dayLabel}`,
-        }));
-      allImages.push(...successImages);
     }
 
     setGeneratedImages(allImages);
@@ -141,36 +182,35 @@ export function PlanBuilder() {
   }
 
   async function handleGenerateDay(dayIndex: number) {
+    if (!credentials.userId || !credentials.apiKey) {
+      setError("Configure your HCTI API credentials first (click Settings)");
+      setShowSettings(true);
+      return;
+    }
+
     setGenerating(true);
     setError(null);
 
     const day = currentWeek.days[dayIndex];
-    const response = await fetch("/api/generate-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        day,
-        weekNumber: currentWeek.weekNumber,
-      }),
-    });
 
-    if (!response.ok) {
-      const errData = await response.json();
-      setError(errData.error ?? "Error generating image");
-      setGenerating(false);
-      return;
+    try {
+      const img = await generateDayImage(day, currentWeek.weekNumber);
+      if (img) {
+        setGeneratedImages((prev) => [
+          ...prev.filter(
+            (existing) =>
+              !(
+                existing.dayNumber === day.dayNumber &&
+                existing.weekNumber === currentWeek.weekNumber
+              )
+          ),
+          img,
+        ]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error generating image");
     }
 
-    const data = await response.json();
-    setGeneratedImages((prev) => [
-      ...prev.filter((img) => img.dayNumber !== day.dayNumber),
-      {
-        dayNumber: day.dayNumber,
-        dayLabel: `S${currentWeek.weekNumber} - ${day.dayLabel}`,
-        muscleGroup: day.muscleGroup,
-        url: data.url,
-      },
-    ]);
     setGenerating(false);
   }
 
@@ -184,36 +224,44 @@ export function PlanBuilder() {
     setGenerating(true);
     setError(null);
 
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "portrait", unit: "px", format: [1080, 1920] });
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [1080, 1920],
+      });
 
-    for (let i = 0; i < generatedImages.length; i++) {
-      const img = generatedImages[i];
+      for (let i = 0; i < generatedImages.length; i++) {
+        const img = generatedImages[i];
 
-      // Fetch the image as blob
-      const response = await fetch(img.url);
-      const blob = await response.blob();
-      const dataUrl = await blobToDataURL(blob);
+        const response = await fetch(img.url);
+        const blob = await response.blob();
+        const dataUrl = await blobToDataURL(blob);
 
-      if (i > 0) {
-        doc.addPage([1080, 1920]);
+        if (i > 0) {
+          doc.addPage([1080, 1920]);
+        }
+
+        doc.addImage(dataUrl, "PNG", 0, 0, 1080, 1920);
       }
 
-      doc.addImage(dataUrl, "PNG", 0, 0, 1080, 1920);
+      doc.save("plan-de-entrenamiento.pdf");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error generating PDF");
     }
 
-    doc.save("plan-de-entrenamiento.pdf");
     setGenerating(false);
   }
 
   // -- Save/Load localStorage --
   function handleSavePlan() {
-    localStorage.setItem("pipe-trainer-plan", JSON.stringify(plan));
+    localStorage.setItem(STORAGE_KEYS.PLAN, JSON.stringify(plan));
     setError(null);
   }
 
   function handleLoadPlan() {
-    const saved = localStorage.getItem("pipe-trainer-plan");
+    const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
     if (saved) {
       setPlan(JSON.parse(saved) as WorkoutPlan);
       setActiveWeek(0);
@@ -231,17 +279,20 @@ export function PlanBuilder() {
             <span className="font-black italic text-pt-accent">PT</span>{" "}
             Plan Builder
           </h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              Settings
+            </Button>
             <Button variant="ghost" onClick={handleSavePlan}>
               Guardar
             </Button>
             <Button variant="ghost" onClick={handleLoadPlan}>
               Cargar
             </Button>
-            <Button
-              onClick={handleGenerateAll}
-              disabled={generating}
-            >
+            <Button onClick={handleGenerateAll} disabled={generating}>
               {generating ? "Generando..." : "Generar Todo"}
             </Button>
             <Button
@@ -254,6 +305,38 @@ export function PlanBuilder() {
           </div>
         </div>
 
+        {/* Settings Panel */}
+        {showSettings && (
+          <div className="rounded-lg border border-pt-border bg-pt-card p-4">
+            <h3 className="mb-3 text-sm font-bold text-pt-accent uppercase">
+              HCTI API Credentials
+            </h3>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <InputField
+                label="User ID"
+                value={credentials.userId}
+                onChange={(v) =>
+                  setCredentials({ ...credentials, userId: v })
+                }
+                placeholder="01KGV..."
+              />
+              <InputField
+                label="API Key"
+                value={credentials.apiKey}
+                onChange={(v) =>
+                  setCredentials({ ...credentials, apiKey: v })
+                }
+                placeholder="019c3..."
+              />
+            </div>
+            <div className="mt-3">
+              <Button onClick={handleSaveCredentials}>
+                Save Credentials
+              </Button>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="rounded-md bg-red-900/50 px-4 py-2 text-sm text-red-300">
             {error}
@@ -261,7 +344,7 @@ export function PlanBuilder() {
         )}
 
         {/* Week Tabs */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {plan.weeks.map((week, i) => (
             <button
               key={week.id}
@@ -301,7 +384,7 @@ export function PlanBuilder() {
         </div>
 
         {/* Day Tabs */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {currentWeek?.days.map((day, i) => (
             <button
               key={day.id}
@@ -342,11 +425,15 @@ export function PlanBuilder() {
             onClick={() => handleGenerateDay(activeDay)}
             disabled={generating}
           >
-            {generating ? "Generando..." : `Generar ${currentDay?.dayLabel ?? "Dia"}`}
+            {generating
+              ? "Generando..."
+              : `Generar ${currentDay?.dayLabel ?? "Dia"}`}
           </Button>
           <Button
             variant="ghost"
-            onClick={() => setPreviewDay(previewDay === activeDay ? null : activeDay)}
+            onClick={() =>
+              setPreviewDay(previewDay === activeDay ? null : activeDay)
+            }
           >
             {previewDay === activeDay ? "Ocultar Preview" : "Ver Preview"}
           </Button>
@@ -360,8 +447,16 @@ export function PlanBuilder() {
             </h3>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {generatedImages.map((img) => (
-                <div key={`${img.dayLabel}-${img.dayNumber}`} className="flex flex-col gap-2">
-                  <a href={img.url} target="_blank" rel="noopener noreferrer">
+                <div
+                  key={`${img.weekNumber}-${img.dayNumber}`}
+                  className="flex flex-col gap-2"
+                >
+                  <a
+                    href={img.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img.url}
                       alt={`${img.dayLabel} - ${img.muscleGroup}`}

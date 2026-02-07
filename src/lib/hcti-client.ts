@@ -16,29 +16,33 @@ interface HCTIErrorResponse {
   statusCode: number;
 }
 
+interface HCTICredentials {
+  userId: string;
+  apiKey: string;
+}
+
 type HCTIResult =
   | { success: true; data: HCTIImageResponse }
   | { success: false; error: HCTIErrorResponse };
 
 const HCTI_API_URL = "https://hcti.io/v1/image";
 
+// Client-side compatible (no process.env, uses btoa instead of Buffer)
 export async function generateImage(
-  request: HCTIImageRequest
+  request: HCTIImageRequest,
+  credentials: HCTICredentials
 ): Promise<HCTIResult> {
-  const userId = process.env.HCTI_USER_ID;
-  const apiKey = process.env.HCTI_API_KEY;
-
-  if (!userId || !apiKey) {
+  if (!credentials.userId || !credentials.apiKey) {
     return {
       success: false,
       error: {
-        error: "Missing HCTI_USER_ID or HCTI_API_KEY environment variables",
-        statusCode: 500,
+        error: "Missing HCTI credentials. Configure them in settings.",
+        statusCode: 400,
       },
     };
   }
 
-  const credentials = Buffer.from(`${userId}:${apiKey}`).toString("base64");
+  const encoded = btoa(`${credentials.userId}:${credentials.apiKey}`);
 
   const body = {
     html: request.html,
@@ -52,7 +56,7 @@ export async function generateImage(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Basic ${credentials}`,
+      Authorization: `Basic ${encoded}`,
     },
     body: JSON.stringify(body),
   });
@@ -73,4 +77,9 @@ export async function generateImage(
   return { success: true, data };
 }
 
-export type { HCTIImageRequest, HCTIImageResponse, HCTIResult };
+export type {
+  HCTIImageRequest,
+  HCTIImageResponse,
+  HCTICredentials,
+  HCTIResult,
+};

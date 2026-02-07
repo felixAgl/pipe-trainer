@@ -101,25 +101,42 @@ const EXERCISE_SUGGESTIONS: Record<string, string[]> = {
   ],
 };
 
-// Cache for Supabase data
-let supabaseExercises: Record<string, string[]> | null = null;
-let fetchPromise: Promise<void> | null = null;
+const CACHE_TTL_MS = 30_000;
 
-function initializeCache(): void {
-  if (fetchPromise) return;
-  fetchPromise = fetchExercisesByMuscleGroup()
+let supabaseExercises: Record<string, string[]> | null = null;
+let fetchInFlight = false;
+let lastFetchTime = 0;
+
+function refreshCache(): void {
+  if (fetchInFlight) return;
+
+  const now = Date.now();
+  if (supabaseExercises && now - lastFetchTime < CACHE_TTL_MS) return;
+
+  fetchInFlight = true;
+  fetchExercisesByMuscleGroup()
     .then((data) => {
       if (Object.keys(data).length > 0) {
         supabaseExercises = data;
       }
+      lastFetchTime = Date.now();
     })
     .catch(() => {
       // Silently fail, use hardcoded fallback
+    })
+    .finally(() => {
+      fetchInFlight = false;
     });
 }
 
-export function getSuggestions(muscleGroup: string, query: string): string[] {
-  initializeCache();
+function invalidateCache(): void {
+  supabaseExercises = null;
+  lastFetchTime = 0;
+  fetchInFlight = false;
+}
+
+function getSuggestions(muscleGroup: string, query: string): string[] {
+  refreshCache();
 
   const source = supabaseExercises ?? EXERCISE_SUGGESTIONS;
   const normalizedGroup = muscleGroup.toUpperCase();
@@ -138,4 +155,4 @@ export function getSuggestions(muscleGroup: string, query: string): string[] {
   );
 }
 
-export { EXERCISE_SUGGESTIONS };
+export { EXERCISE_SUGGESTIONS, getSuggestions, invalidateCache };

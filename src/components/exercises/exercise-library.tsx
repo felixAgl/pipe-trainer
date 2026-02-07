@@ -10,6 +10,7 @@ import {
   updateExercise,
   deleteExercise,
 } from "@/lib/exercise-repository";
+import { invalidateCache } from "@/lib/exercise-suggestions";
 import type { MuscleGroupWithExercises } from "@/lib/exercise-repository";
 import { supabase } from "@/lib/supabase";
 import { MuscleGroupSection } from "./muscle-group-section";
@@ -32,6 +33,7 @@ export function ExerciseLibrary() {
     try {
       const data = await fetchMuscleGroupsWithExercises();
       setGroups(data);
+      invalidateCache();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error cargando ejercicios");
     } finally {

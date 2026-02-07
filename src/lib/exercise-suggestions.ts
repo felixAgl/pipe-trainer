@@ -1,4 +1,6 @@
-// Common exercise names organized by muscle group for autocomplete
+import { fetchExercisesByMuscleGroup } from "@/lib/exercise-repository";
+
+// Hardcoded fallback for when Supabase is not configured or hasn't loaded yet
 const EXERCISE_SUGGESTIONS: Record<string, string[]> = {
   PIERNA: [
     "Sentadilla hack",
@@ -97,14 +99,34 @@ const EXERCISE_SUGGESTIONS: Record<string, string[]> = {
     "Mountain climbers",
     "Burpees",
   ],
-} as const;
+};
+
+// Cache for Supabase data
+let supabaseExercises: Record<string, string[]> | null = null;
+let fetchPromise: Promise<void> | null = null;
+
+function initializeCache(): void {
+  if (fetchPromise) return;
+  fetchPromise = fetchExercisesByMuscleGroup()
+    .then((data) => {
+      if (Object.keys(data).length > 0) {
+        supabaseExercises = data;
+      }
+    })
+    .catch(() => {
+      // Silently fail, use hardcoded fallback
+    });
+}
 
 export function getSuggestions(muscleGroup: string, query: string): string[] {
+  initializeCache();
+
+  const source = supabaseExercises ?? EXERCISE_SUGGESTIONS;
   const normalizedGroup = muscleGroup.toUpperCase();
   const normalizedQuery = query.toLowerCase();
 
-  const groupExercises = EXERCISE_SUGGESTIONS[normalizedGroup] ?? [];
-  const generalExercises = EXERCISE_SUGGESTIONS.GENERAL ?? [];
+  const groupExercises = source[normalizedGroup] ?? [];
+  const generalExercises = source["GENERAL"] ?? [];
   const allExercises = [...groupExercises, ...generalExercises];
 
   if (!normalizedQuery) {

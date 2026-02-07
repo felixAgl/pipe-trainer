@@ -1,5 +1,7 @@
+"use client";
+
 import { PageHeader } from "@/components/dashboard/page-header";
-import { EmptyState } from "@/components/dashboard/empty-state";
+import { ExerciseLibrary } from "@/components/exercises/exercise-library";
 
 export default function ExercisesPage() {
   return (
@@ -10,10 +12,7 @@ export default function ExercisesPage() {
       />
 
       <div className="mt-6">
-        <EmptyState
-          title="No exercises yet"
-          description="Build your exercise library to use in the plan generator. Exercises can be organized by muscle group and equipment. Available once Supabase is connected."
-        />
+        <ExerciseLibrary />
       </div>
     </div>
   );

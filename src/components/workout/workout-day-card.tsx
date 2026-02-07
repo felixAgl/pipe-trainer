@@ -45,18 +45,26 @@ export function WorkoutDayCard({
           />
         </div>
 
-        {/* Plan Title - STRONG neon glow */}
+        {/* Plan Title - bold condensed stencil style */}
         <h1
-          className="text-center text-[44px] font-black italic leading-tight tracking-wider text-pt-accent uppercase"
-          style={{ textShadow: GLOW_GREEN }}
+          className="text-center text-[48px] font-black leading-tight text-pt-accent uppercase"
+          style={{
+            textShadow: GLOW_GREEN,
+            fontFamily: "Impact, 'Arial Black', 'Helvetica Neue', sans-serif",
+            letterSpacing: "0.12em",
+          }}
         >
           PLAN DE
           <br />
           ENTRENAMIENTO
         </h1>
         <h2
-          className="mt-2 text-center text-[34px] font-black italic tracking-widest text-pt-accent uppercase"
-          style={{ textShadow: GLOW_GREEN }}
+          className="mt-2 text-center text-[36px] font-black text-pt-accent uppercase"
+          style={{
+            textShadow: GLOW_GREEN,
+            fontFamily: "Impact, 'Arial Black', 'Helvetica Neue', sans-serif",
+            letterSpacing: "0.18em",
+          }}
         >
           SEMANA {weekNumber}
         </h2>

@@ -22,8 +22,10 @@ export function WorkoutDayCard({
     <div
       className="flex h-[1920px] w-[1080px] flex-col font-sans text-white"
       style={{
-        background:
-          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 25%, #151515 40%, #222222 55%, #333333 68%, #2a2a2a 80%, #1a1a1a 92%, #0f0f0f 100%)",
+        background: [
+          "radial-gradient(ellipse 90% 50% at 50% 55%, rgba(62,56,48,0.55) 0%, rgba(46,42,38,0.35) 30%, rgba(30,27,24,0.15) 60%, transparent 100%)",
+          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 20%, #141312 35%, #1e1b18 48%, #2a2622 58%, #2a2622 65%, #1e1b18 78%, #111010 90%, #0a0a0a 100%)",
+        ].join(", "),
       }}
     >
       {/* Header: Logo + Title */}

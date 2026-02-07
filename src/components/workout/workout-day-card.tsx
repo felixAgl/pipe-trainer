@@ -55,25 +55,24 @@ export function WorkoutDayCard({
         </h2>
       </div>
 
-      {/* Day Bar - Chevron/diagonal cut between white and green */}
+      {/* Day Bar - Arrow/chevron cut from white into green */}
       <div className="relative mx-14 mt-4 flex h-[60px] items-stretch">
-        {/* White section (Dia X) */}
-        <div className="relative z-10 flex items-center bg-white px-7 pr-10">
+        {/* White section (Dia X) with arrow shape via clip-path */}
+        <div
+          className="relative z-10 flex items-center bg-white pl-7 pr-12"
+          style={{
+            clipPath: "polygon(0 0, calc(100% - 30px) 0, 100% 50%, calc(100% - 30px) 100%, 0 100%)",
+          }}
+        >
           <span className="text-[22px] font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
-          {/* Diagonal chevron - white triangle overlapping green */}
-          <div
-            className="absolute top-0 right-0 h-full"
-            style={{
-              width: 30,
-              background:
-                "linear-gradient(to bottom right, white 50%, transparent 50%)",
-            }}
-          />
         </div>
-        {/* Green section (Muscle group) - shifted left to sit behind chevron */}
-        <div className="flex flex-1 items-center justify-center bg-pt-accent px-10">
+        {/* Green section (Muscle group) - pulled left to overlap behind arrow */}
+        <div
+          className="flex flex-1 items-center justify-center bg-pt-accent px-10"
+          style={{ marginLeft: -30 }}
+        >
           <span className="text-[26px] font-extrabold tracking-wider text-black uppercase">
             {day.muscleGroup}
           </span>
@@ -139,7 +138,7 @@ export function WorkoutDayCard({
                 {exercise.reps}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white bg-pt-accent/10 px-2 py-5">
+            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
               <span className="text-[22px] font-bold text-pt-accent">
                 {exercise.restTime}
               </span>

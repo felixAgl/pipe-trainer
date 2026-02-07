@@ -87,7 +87,7 @@ describe("buildWorkoutDayHTML", () => {
     const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
     expect(html).toContain("linear-gradient");
     expect(html).toContain("#0a0a0a");
-    expect(html).toContain("#222222");
+    expect(html).toContain("#333333");
   });
 
   it("should include the PT logo text", () => {
@@ -103,9 +103,25 @@ describe("buildWorkoutDayHTML", () => {
     });
   });
 
-  it("should use green borders on table cells", () => {
+  it("should use white thick borders on table cells", () => {
     const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
-    expect(html).toContain("border: 1px solid #ccff00");
+    expect(html).toContain("border: 2px solid #fff");
+  });
+
+  it("should use green background on table header row", () => {
+    const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
+    expect(html).toContain("background: #ccff00");
+  });
+
+  it("should use white background for day label", () => {
+    const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
+    expect(html).toContain("background: #fff");
+  });
+
+  it("should use white glow on CARDIO text", () => {
+    const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
+    expect(html).toContain("color: #fff");
+    expect(html).toContain("rgba(255,255,255,0.8)");
   });
 
   it("should include the coach watermark footer", () => {

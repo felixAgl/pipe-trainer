@@ -15,18 +15,18 @@ export function buildWorkoutDayHTML(
     .map(
       (exercise) => `
       <tr>
-        <td style="padding: 14px 16px; text-align: center; border: 1px solid #ccff00; color: #fff; font-size: 15px;">${exercise.name}</td>
-        <td style="padding: 14px 8px; text-align: center; border: 1px solid #ccff00; color: #fff; font-size: 15px;">${exercise.series}</td>
-        <td style="padding: 14px 8px; text-align: center; border: 1px solid #ccff00; color: #fff; font-size: 15px;">${exercise.reps}</td>
-        <td style="padding: 14px 8px; text-align: center; border: 1px solid #ccff00; color: #fff; font-size: 15px;">${exercise.restTime}</td>
-        <td style="padding: 14px 8px; text-align: center; border: 1px solid #ccff00; color: #fff; font-size: 15px;">${exercise.rir}</td>
-        <td style="padding: 14px 8px; text-align: center; border: 1px solid #ccff00; color: #fff; font-size: 15px;">${exercise.rpe}</td>
+        <td style="padding: 14px 16px; text-align: center; border: 2px solid #fff; color: #fff; font-size: 15px;">${exercise.name}</td>
+        <td style="padding: 14px 8px; text-align: center; border: 2px solid #fff; color: #fff; font-size: 15px;">${exercise.series}</td>
+        <td style="padding: 14px 8px; text-align: center; border: 2px solid #fff; color: #fff; font-size: 15px;">${exercise.reps}</td>
+        <td style="padding: 14px 8px; text-align: center; border: 2px solid #fff; color: #fff; font-size: 15px;">${exercise.restTime}</td>
+        <td style="padding: 14px 8px; text-align: center; border: 2px solid #fff; color: #fff; font-size: 15px;">${exercise.rir}</td>
+        <td style="padding: 14px 8px; text-align: center; border: 2px solid #fff; color: #fff; font-size: 15px;">${exercise.rpe}</td>
       </tr>`
     )
     .join("");
 
   return `
-    <div style="width: 1080px; min-height: 1920px; font-family: 'Inter', Arial, sans-serif; background: linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 40%, #1a1a1a 60%, #222222 72%, #1a1a1a 85%, #0f0f0f 100%); color: #fff; padding: 0; margin: 0; display: flex; flex-direction: column;">
+    <div style="width: 1080px; min-height: 1920px; font-family: 'Inter', Arial, sans-serif; background: linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 30%, #181818 45%, #282828 58%, #333333 70%, #2a2a2a 80%, #1a1a1a 92%, #0f0f0f 100%); color: #fff; padding: 0; margin: 0; display: flex; flex-direction: column;">
 
       <!-- Header -->
       <div style="padding: 32px 40px 8px 40px; display: flex; flex-direction: column; align-items: center;">
@@ -43,8 +43,8 @@ export function buildWorkoutDayHTML(
 
       <!-- Day Bar -->
       <div style="margin: 12px 40px 0 40px; display: flex; align-items: stretch;">
-        <div style="background: #1a1a1a; padding: 10px 20px; display: flex; align-items: center; border: 1px solid #333;">
-          <span style="font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap;">${day.dayLabel}</span>
+        <div style="background: #fff; padding: 10px 20px; display: flex; align-items: center;">
+          <span style="font-size: 16px; font-weight: 700; color: #000; white-space: nowrap;">${day.dayLabel}</span>
         </div>
         <div style="background: #ccff00; padding: 10px 32px; display: flex; align-items: center; justify-content: center;">
           <span style="font-size: 18px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 2px;">${day.muscleGroup}</span>
@@ -53,15 +53,15 @@ export function buildWorkoutDayHTML(
 
       <!-- Exercise Table -->
       <div style="margin: 20px 40px 0 40px;">
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccff00;">
+        <table style="width: 100%; border-collapse: collapse; border: 2px solid #fff;">
           <thead>
-            <tr>
-              <th style="padding: 12px 16px; text-align: center; border: 1px solid #ccff00; font-size: 13px; font-weight: 800; color: #ccff00; text-transform: uppercase; letter-spacing: 1px; width: 30%;">Ejercicios</th>
-              <th style="padding: 12px 8px; text-align: center; border: 1px solid #ccff00; font-size: 13px; font-weight: 800; color: #ccff00; text-transform: uppercase; letter-spacing: 1px; width: 11%;">Series</th>
-              <th style="padding: 12px 8px; text-align: center; border: 1px solid #ccff00; font-size: 13px; font-weight: 800; color: #ccff00; text-transform: uppercase; letter-spacing: 1px; width: 11%;">Reps</th>
-              <th style="padding: 12px 8px; text-align: center; border: 1px solid #ccff00; font-size: 11px; font-weight: 800; color: #ccff00; text-transform: uppercase; letter-spacing: 1px; width: 18%; line-height: 1.3;">Tiempo<br>Descanso</th>
-              <th style="padding: 12px 8px; text-align: center; border: 1px solid #ccff00; font-size: 13px; font-weight: 800; color: #ccff00; text-transform: uppercase; letter-spacing: 1px; width: 10%;">RIR</th>
-              <th style="padding: 12px 8px; text-align: center; border: 1px solid #ccff00; font-size: 13px; font-weight: 800; color: #ccff00; text-transform: uppercase; letter-spacing: 1px; width: 10%;">RPE</th>
+            <tr style="background: #ccff00;">
+              <th style="padding: 12px 16px; text-align: center; border: 2px solid #fff; font-size: 13px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 1px; width: 30%;">Ejercicios</th>
+              <th style="padding: 12px 8px; text-align: center; border: 2px solid #fff; font-size: 13px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 1px; width: 11%;">Series</th>
+              <th style="padding: 12px 8px; text-align: center; border: 2px solid #fff; font-size: 13px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 1px; width: 11%;">Reps</th>
+              <th style="padding: 12px 8px; text-align: center; border: 2px solid #fff; font-size: 11px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 1px; width: 18%; line-height: 1.3;">Tiempo<br>Descanso</th>
+              <th style="padding: 12px 8px; text-align: center; border: 2px solid #fff; font-size: 13px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 1px; width: 10%;">RIR</th>
+              <th style="padding: 12px 8px; text-align: center; border: 2px solid #fff; font-size: 13px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 1px; width: 10%;">RPE</th>
             </tr>
           </thead>
           <tbody>
@@ -75,10 +75,10 @@ export function buildWorkoutDayHTML(
 
       <!-- Cardio Section -->
       <div style="margin: 0 40px 16px 40px; display: flex; flex-direction: column; align-items: center;">
-        <h3 style="font-size: 36px; font-weight: 900; color: #ccff00; text-transform: uppercase; letter-spacing: 8px; margin: 0 0 20px 0; text-shadow: 0 0 20px rgba(204,255,0,0.8), 0 0 40px rgba(204,255,0,0.4), 0 0 80px rgba(204,255,0,0.2);">
+        <h3 style="font-size: 36px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 8px; margin: 0 0 20px 0; text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4), 0 0 80px rgba(255,255,255,0.2);">
           CARDIO
         </h3>
-        <div style="width: 100%; border: 2px solid #ccff00; border-radius: 4px; padding: 20px 24px; min-height: 100px;">
+        <div style="width: 100%; border: 2px solid #fff; border-radius: 4px; padding: 20px 24px; min-height: 100px;">
           <p style="font-size: 16px; color: #fff; margin: 0;">${day.cardio.description}</p>
         </div>
       </div>

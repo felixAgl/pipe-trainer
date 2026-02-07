@@ -16,7 +16,7 @@ export function WorkoutDayCard({
       className="flex min-h-[1920px] w-[1080px] flex-col font-sans text-white"
       style={{
         background:
-          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 40%, #1a1a1a 60%, #222222 72%, #1a1a1a 85%, #0f0f0f 100%)",
+          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 30%, #181818 45%, #282828 58%, #333333 70%, #2a2a2a 80%, #1a1a1a 92%, #0f0f0f 100%)",
       }}
     >
       {/* Header: Logo + Title */}
@@ -37,10 +37,10 @@ export function WorkoutDayCard({
         </h2>
       </div>
 
-      {/* Day Bar - Dia and Muscle Group side by side, close together */}
+      {/* Day Bar - White bg for day, green for muscle group */}
       <div className="mx-10 mt-3 flex items-stretch">
-        <div className="flex items-center border border-pt-border bg-pt-card px-5 py-2.5">
-          <span className="text-base font-bold text-white whitespace-nowrap">
+        <div className="flex items-center bg-white px-5 py-2.5">
+          <span className="text-base font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
         </div>
@@ -53,66 +53,66 @@ export function WorkoutDayCard({
 
       {/* Exercise Table */}
       <div className="mx-10 mt-5">
-        {/* Table Header - transparent bg, green text, green borders */}
-        <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] border border-pt-accent text-center">
-          <div className="border border-pt-accent px-4 py-3 text-center">
-            <span className="text-[13px] font-extrabold tracking-wide text-pt-accent uppercase">
+        {/* Table Header - GREEN bg, black text, white thick borders */}
+        <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] border-2 border-white bg-pt-accent text-center">
+          <div className="border-2 border-white px-4 py-3 text-center">
+            <span className="text-[13px] font-extrabold tracking-wide text-black uppercase">
               Ejercicios
             </span>
           </div>
-          <div className="border border-pt-accent px-2 py-3">
-            <span className="text-[13px] font-extrabold tracking-wide text-pt-accent uppercase">
+          <div className="border-2 border-white px-2 py-3">
+            <span className="text-[13px] font-extrabold tracking-wide text-black uppercase">
               Series
             </span>
           </div>
-          <div className="border border-pt-accent px-2 py-3">
-            <span className="text-[13px] font-extrabold tracking-wide text-pt-accent uppercase">
+          <div className="border-2 border-white px-2 py-3">
+            <span className="text-[13px] font-extrabold tracking-wide text-black uppercase">
               Reps
             </span>
           </div>
-          <div className="border border-pt-accent px-2 py-3">
-            <span className="text-[11px] font-extrabold leading-tight tracking-wide text-pt-accent uppercase">
+          <div className="border-2 border-white px-2 py-3">
+            <span className="text-[11px] font-extrabold leading-tight tracking-wide text-black uppercase">
               Tiempo
               <br />
               Descanso
             </span>
           </div>
-          <div className="border border-pt-accent px-2 py-3">
-            <span className="text-[13px] font-extrabold tracking-wide text-pt-accent uppercase">
+          <div className="border-2 border-white px-2 py-3">
+            <span className="text-[13px] font-extrabold tracking-wide text-black uppercase">
               RIR
             </span>
           </div>
-          <div className="border border-pt-accent px-2 py-3">
-            <span className="text-[13px] font-extrabold tracking-wide text-pt-accent uppercase">
+          <div className="border-2 border-white px-2 py-3">
+            <span className="text-[13px] font-extrabold tracking-wide text-black uppercase">
               RPE
             </span>
           </div>
         </div>
 
-        {/* Table Rows - green borders */}
+        {/* Table Rows - white thick borders */}
         {day.exercises.map((exercise) => (
           <div
             key={exercise.id}
             className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] text-center"
           >
-            <div className="flex items-center justify-center border border-pt-accent px-4 py-3.5">
+            <div className="flex items-center justify-center border-2 border-white px-4 py-3.5">
               <span className="text-[15px] text-white">{exercise.name}</span>
             </div>
-            <div className="flex items-center justify-center border border-pt-accent px-2 py-3.5">
+            <div className="flex items-center justify-center border-2 border-white px-2 py-3.5">
               <span className="text-[15px] text-white">{exercise.series}</span>
             </div>
-            <div className="flex items-center justify-center border border-pt-accent px-2 py-3.5">
+            <div className="flex items-center justify-center border-2 border-white px-2 py-3.5">
               <span className="text-[15px] text-white">{exercise.reps}</span>
             </div>
-            <div className="flex items-center justify-center border border-pt-accent px-2 py-3.5">
+            <div className="flex items-center justify-center border-2 border-white px-2 py-3.5">
               <span className="text-[15px] text-white">
                 {exercise.restTime}
               </span>
             </div>
-            <div className="flex items-center justify-center border border-pt-accent px-2 py-3.5">
+            <div className="flex items-center justify-center border-2 border-white px-2 py-3.5">
               <span className="text-[15px] text-white">{exercise.rir}</span>
             </div>
-            <div className="flex items-center justify-center border border-pt-accent px-2 py-3.5">
+            <div className="flex items-center justify-center border-2 border-white px-2 py-3.5">
               <span className="text-[15px] text-white">{exercise.rpe}</span>
             </div>
           </div>
@@ -124,19 +124,19 @@ export function WorkoutDayCard({
 
       {/* Cardio Section */}
       <div className="mx-10 mb-4 flex flex-col items-center">
-        {/* Glowing CARDIO title - GREEN glow */}
+        {/* Glowing CARDIO title - WHITE text with white glow */}
         <h3
-          className="mb-5 text-4xl font-black tracking-widest text-pt-accent uppercase"
+          className="mb-5 text-4xl font-black tracking-widest text-white uppercase"
           style={{
             textShadow:
-              "0 0 20px rgba(204,255,0,0.8), 0 0 40px rgba(204,255,0,0.4), 0 0 80px rgba(204,255,0,0.2)",
+              "0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4), 0 0 80px rgba(255,255,255,0.2)",
           }}
         >
           CARDIO
         </h3>
 
-        {/* Cardio Description Box - SOLID green border */}
-        <div className="min-h-[100px] w-full rounded-sm border-2 border-solid border-pt-accent px-6 py-5">
+        {/* Cardio Description Box - WHITE solid border */}
+        <div className="min-h-[100px] w-full rounded-sm border-2 border-solid border-white px-6 py-5">
           <p className="text-base text-white">{day.cardio.description}</p>
         </div>
       </div>

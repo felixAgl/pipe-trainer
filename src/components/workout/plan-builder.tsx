@@ -336,7 +336,7 @@ export function PlanBuilder() {
         </div>
       )}
 
-      <div className="grid min-h-screen grid-cols-1 gap-4 p-3 sm:gap-6 sm:p-6 xl:grid-cols-[1fr_500px]">
+      <div className="grid min-h-full grid-cols-1 gap-4 p-3 sm:gap-6 sm:p-6 xl:grid-cols-[1fr_460px]">
         {/* Left Panel - Editor */}
         <div className="flex flex-col gap-4 sm:gap-6">
           {/* Top Controls */}
@@ -508,11 +508,11 @@ export function PlanBuilder() {
             </h3>
             <div
               className="overflow-hidden rounded-lg border border-pt-border"
-              style={{ width: 486, height: 864 }}
+              style={{ width: 440, height: 782 }}
             >
               <div
                 className="origin-top-left"
-                style={{ transform: "scale(0.45)", width: 1080 }}
+                style={{ transform: "scale(0.407)", width: 1080 }}
               >
                 {currentDay && currentWeek && (
                   <WorkoutDayCard

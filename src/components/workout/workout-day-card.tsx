@@ -55,24 +55,25 @@ export function WorkoutDayCard({
         </h2>
       </div>
 
-      {/* Day Bar - White rect + Green arrow/chevron pointing right */}
+      {/* Day Bar - White rect + Green with arrow point on LEFT side */}
       <div className="relative mx-14 mt-4 flex h-[60px]">
-        {/* White rectangle (Dia X) - simple rect, no clip */}
+        {/* White rectangle (Dia X) */}
         <div className="flex items-center bg-white px-7">
           <span className="text-[22px] font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
         </div>
-        {/* Green arrow shape - starts flat on left, ends in arrow point on right */}
+        {/* Green section - left side has arrow/chevron point, right side is flat */}
         <div
           className="flex items-center justify-center px-14"
           style={{
             backgroundColor: "#DBFE53",
             clipPath:
-              "polygon(0 0, calc(100% - 35px) 0, 100% 50%, calc(100% - 35px) 100%, 0 100%)",
+              "polygon(30px 0, 100% 0, 100% 100%, 30px 100%, 0 50%)",
+            marginLeft: -5,
           }}
         >
-          <span className="text-[26px] font-extrabold tracking-wider text-black uppercase">
+          <span className="ml-4 text-[26px] font-extrabold tracking-wider text-black uppercase">
             {day.muscleGroup}
           </span>
         </div>

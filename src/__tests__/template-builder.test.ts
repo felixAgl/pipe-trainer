@@ -101,11 +101,22 @@ describe("buildWorkoutDayHTML", () => {
     });
   });
 
-  it("should alternate row backgrounds", () => {
+  it("should use green borders on table cells", () => {
     const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
-    // First row should be #0a0a0a, second rgba(26,26,26,0.3)
-    expect(html).toContain('background: #0a0a0a');
-    expect(html).toContain('background: rgba(26,26,26,0.3)');
+    expect(html).toContain("border: 1px solid #ccff00");
+  });
+
+  it("should include the coach watermark footer", () => {
+    const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
+    expect(html).toContain("Pipetrainer_11");
+  });
+
+  it("should allow custom coach handle", () => {
+    const html = buildWorkoutDayHTML(MOCK_DAY, {
+      weekNumber: 1,
+      coachHandle: "MyCoach_99",
+    });
+    expect(html).toContain("MyCoach_99");
   });
 });
 

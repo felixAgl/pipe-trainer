@@ -235,9 +235,7 @@ export function PlanBuilder() {
       for (let i = 0; i < generatedImages.length; i++) {
         const img = generatedImages[i];
 
-        const response = await fetch(img.url);
-        const blob = await response.blob();
-        const dataUrl = await blobToDataURL(blob);
+        const dataUrl = await imageUrlToDataURL(img.url, 1080, 1920);
 
         if (i > 0) {
           doc.addPage([1080, 1920]);
@@ -521,11 +519,28 @@ export function PlanBuilder() {
   );
 }
 
-function blobToDataURL(blob: Blob): Promise<string> {
+function imageUrlToDataURL(
+  url: string,
+  width: number,
+  height: number
+): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Could not get canvas context"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () =>
+      reject(new Error(`Failed to load image: ${url}`));
+    img.src = url;
   });
 }

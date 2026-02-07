@@ -49,6 +49,7 @@ export async function generateImage(
     css: request.css,
     google_fonts: request.googleFonts ?? "Inter",
     viewport_width: request.viewportWidth ?? 1080,
+    viewport_height: request.viewportHeight ?? 1920,
     device_scale: request.deviceScale ?? 2,
   };
 

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
 import { createWorkoutDay, createWorkoutPlan } from "@/lib/plan-factory";
 import { captureNode } from "@/lib/image-capture";
-import { savePlan, updatePlan, fetchPlanById } from "@/lib/plan-repository";
+import { savePlan, updatePlan, fetchPlanById, fetchPlans } from "@/lib/plan-repository";
+import type { PlanListItem } from "@/lib/plan-repository";
 import { fetchClients } from "@/lib/client-repository";
 import type { ClientRow } from "@/lib/client-repository";
 import { supabase } from "@/lib/supabase";
@@ -45,6 +46,8 @@ export function PlanBuilder() {
   const [planTitle, setPlanTitle] = useState("Plan de Entrenamiento");
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [savingDb, setSavingDb] = useState(false);
+  const [savedPlans, setSavedPlans] = useState<PlanListItem[]>([]);
+  const [showLoadModal, setShowLoadModal] = useState(false);
 
   const captureContainerRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +62,7 @@ export function PlanBuilder() {
       .catch(() => {});
   }, []);
 
-  // Auto-load plan from localStorage or from planId URL param
+  // Auto-load plan from URL param or localStorage fallback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const planId = params.get("planId");
@@ -92,6 +95,15 @@ export function PlanBuilder() {
     const timer = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // Auto-save to localStorage as backup whenever plan changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PLAN, JSON.stringify(plan));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [plan]);
 
   // -- Week Management --
   function handleAddWeek() {
@@ -311,9 +323,13 @@ export function PlanBuilder() {
     setGenerating(false);
   }
 
-  // -- Save/Load Supabase --
-  async function handleSaveToDb() {
-    if (!supabase) return;
+  // -- Save (Supabase primary, localStorage auto-backup) --
+  async function handleSave() {
+    if (!supabase) {
+      setToast({ message: "Plan guardado localmente", type: "success" });
+      return;
+    }
+
     setSavingDb(true);
     try {
       if (currentPlanId) {
@@ -322,7 +338,7 @@ export function PlanBuilder() {
           plan,
           clientId: selectedClientId,
         });
-        setToast({ message: "Plan actualizado en DB", type: "success" });
+        setToast({ message: "Plan actualizado", type: "success" });
       } else {
         const newId = await savePlan({
           title: planTitle,
@@ -330,7 +346,7 @@ export function PlanBuilder() {
           clientId: selectedClientId,
         });
         setCurrentPlanId(newId);
-        setToast({ message: "Plan guardado en DB", type: "success" });
+        setToast({ message: "Plan guardado", type: "success" });
       }
     } catch (err) {
       setToast({
@@ -342,31 +358,56 @@ export function PlanBuilder() {
     }
   }
 
-  // -- Save/Load localStorage --
-  function handleSavePlan() {
+  // -- Load from Supabase (show plan selector) --
+  async function handleOpenLoad() {
+    if (!supabase) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
+        if (saved) {
+          setPlan(JSON.parse(saved) as WorkoutPlan);
+          setActiveWeek(0);
+          setActiveDay(0);
+          setToast({ message: "Plan cargado localmente", type: "success" });
+        } else {
+          setToast({ message: "No hay plan guardado", type: "error" });
+        }
+      } catch {
+        setToast({ message: "Error al cargar: datos corruptos", type: "error" });
+      }
+      return;
+    }
+
     try {
-      localStorage.setItem(STORAGE_KEYS.PLAN, JSON.stringify(plan));
-      setError(null);
-      setToast({ message: "Plan guardado", type: "success" });
+      const plans = await fetchPlans();
+      setSavedPlans(plans);
+      setShowLoadModal(true);
     } catch {
-      setToast({ message: "Error al guardar el plan", type: "error" });
+      setToast({ message: "Error cargando planes", type: "error" });
     }
   }
 
-  function handleLoadPlan() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
-      if (saved) {
-        setPlan(JSON.parse(saved) as WorkoutPlan);
-        setActiveWeek(0);
-        setActiveDay(0);
-        setToast({ message: "Plan cargado", type: "success" });
-      } else {
-        setToast({ message: "No hay plan guardado", type: "error" });
-      }
-    } catch {
-      setToast({ message: "Error al cargar: datos corruptos", type: "error" });
+  async function handleLoadPlan(planId: string) {
+    const loaded = await fetchPlanById(planId);
+    if (loaded) {
+      setPlan(loaded);
+      setCurrentPlanId(planId);
+      setPlanTitle(loaded.title || "Plan de Entrenamiento");
+      setActiveWeek(0);
+      setActiveDay(0);
+      setShowLoadModal(false);
+      setToast({ message: "Plan cargado", type: "success" });
     }
+  }
+
+  function handleNewPlan() {
+    setPlan(createWorkoutPlan(2, 5));
+    setCurrentPlanId(null);
+    setPlanTitle("Plan de Entrenamiento");
+    setSelectedClientId(null);
+    setActiveWeek(0);
+    setActiveDay(0);
+    setGeneratedImages([]);
+    setToast({ message: "Nuevo plan creado", type: "success" });
   }
 
   return (
@@ -400,6 +441,43 @@ export function PlanBuilder() {
         </div>
       )}
 
+      {/* Load Plan Modal */}
+      {showLoadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="mx-4 w-full max-w-md rounded-lg border border-pt-border bg-pt-card p-6">
+            <h2 className="mb-4 text-lg font-bold text-white">Cargar Plan</h2>
+            {savedPlans.length === 0 ? (
+              <p className="text-sm text-pt-muted">No hay planes guardados.</p>
+            ) : (
+              <div className="max-h-64 space-y-2 overflow-y-auto">
+                {savedPlans.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => handleLoadPlan(p.id)}
+                    className="flex w-full items-center justify-between rounded-md border border-pt-border bg-pt-dark px-4 py-3 text-left transition-colors hover:border-pt-accent/50"
+                  >
+                    <div>
+                      <span className="text-sm font-medium text-white">{p.title}</span>
+                      {p.clientName && (
+                        <span className="ml-2 text-xs text-pt-muted">({p.clientName})</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-pt-muted">
+                      {p.weeksCount}sem / {p.daysPerWeek}dias
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex justify-end">
+              <Button variant="ghost" onClick={() => setShowLoadModal(false)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid min-h-full grid-cols-1 gap-4 p-3 sm:gap-6 sm:p-6 xl:grid-cols-[1fr_460px]">
         {/* Left Panel - Editor */}
         <div className="flex flex-col gap-4 sm:gap-6">
@@ -410,10 +488,10 @@ export function PlanBuilder() {
               Plan Builder
             </h1>
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <Button variant="ghost" onClick={handleSavePlan}>
-                Guardar
+              <Button variant="ghost" onClick={handleNewPlan}>
+                Nuevo
               </Button>
-              <Button variant="ghost" onClick={handleLoadPlan}>
+              <Button variant="ghost" onClick={handleOpenLoad}>
                 Cargar
               </Button>
               <Button onClick={handleGenerateAll} disabled={generating}>
@@ -429,16 +507,16 @@ export function PlanBuilder() {
             </div>
           </div>
 
-          {/* DB Save Controls */}
-          {supabase && (
-            <div className="flex flex-col gap-3 rounded-lg border border-pt-border bg-pt-card/50 p-3 sm:flex-row sm:items-end sm:gap-4 sm:p-4">
-              <InputField
-                label="Titulo del plan"
-                value={planTitle}
-                onChange={setPlanTitle}
-                placeholder="Nombre del plan"
-                className="sm:max-w-xs"
-              />
+          {/* Plan Info + Save */}
+          <div className="flex flex-col gap-3 rounded-lg border border-pt-accent/20 bg-pt-card/50 p-3 sm:flex-row sm:items-end sm:gap-4 sm:p-4">
+            <InputField
+              label="Titulo del plan"
+              value={planTitle}
+              onChange={setPlanTitle}
+              placeholder="Nombre del plan"
+              className="sm:max-w-xs"
+            />
+            {supabase && (
               <div className="flex flex-col gap-1 sm:max-w-xs">
                 <label className="text-xs font-medium text-pt-muted uppercase tracking-wide">
                   Cliente
@@ -456,15 +534,18 @@ export function PlanBuilder() {
                   ))}
                 </select>
               </div>
-              <Button onClick={handleSaveToDb} disabled={savingDb || !planTitle.trim()}>
-                {savingDb
-                  ? "Guardando..."
-                  : currentPlanId
-                    ? "Actualizar en DB"
-                    : "Guardar en DB"}
-              </Button>
-            </div>
-          )}
+            )}
+            <Button onClick={handleSave} disabled={savingDb || !planTitle.trim()}>
+              {savingDb
+                ? "Guardando..."
+                : currentPlanId
+                  ? "Actualizar"
+                  : "Guardar"}
+            </Button>
+            {currentPlanId && (
+              <span className="text-xs text-pt-accent">Editando plan existente</span>
+            )}
+          </div>
 
           {error && (
             <div className="rounded-md bg-red-900/50 px-4 py-2 text-sm text-red-300">

@@ -6,7 +6,7 @@ import { RecentActivity } from "@/components/dashboard/recent-activity";
 export default function DashboardOverview() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <PageHeader title="Dashboard" description="PipeTrainer coaching overview." />
+      <PageHeader title="Dashboard" description="Resumen general de tu entrenamiento." />
 
       <div className="mt-6">
         <OverviewStats />

@@ -7,8 +7,8 @@ export default function ExercisesPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
-        title="Exercises"
-        description="Your exercise library for building workout plans."
+        title="Ejercicios"
+        description="Tu biblioteca de ejercicios para crear planes de entrenamiento."
       />
 
       <div className="mt-6">

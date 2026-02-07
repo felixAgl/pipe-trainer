@@ -170,12 +170,12 @@ export function WorkoutDayCard({
       <div className="mx-14 mb-6 flex flex-col items-center">
         {/* Glowing CARDIO title - bold condensed stencil style */}
         <h3
-          className="mb-6 text-[60px] font-black tracking-[0.25em] text-white uppercase"
+          className="mb-6 text-[80px] font-black text-white uppercase"
           style={{
             textShadow: GLOW_WHITE,
             fontFamily: "Impact, 'Arial Black', 'Helvetica Neue', sans-serif",
             fontStretch: "condensed",
-            letterSpacing: "0.15em",
+            letterSpacing: "0.2em",
           }}
         >
           CARDIO

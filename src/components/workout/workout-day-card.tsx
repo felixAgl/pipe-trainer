@@ -7,6 +7,12 @@ interface WorkoutDayCardProps {
   coachHandle?: string;
 }
 
+const GLOW_GREEN =
+  "0 0 10px rgba(219,254,83,1), 0 0 20px rgba(219,254,83,0.9), 0 0 40px rgba(219,254,83,0.7), 0 0 80px rgba(219,254,83,0.4), 0 0 120px rgba(219,254,83,0.2)";
+
+const GLOW_WHITE =
+  "0 0 10px rgba(255,255,255,1), 0 0 25px rgba(255,255,255,0.9), 0 0 50px rgba(255,255,255,0.6), 0 0 100px rgba(255,255,255,0.3)";
+
 export function WorkoutDayCard({
   day,
   weekNumber,
@@ -32,13 +38,10 @@ export function WorkoutDayCard({
           />
         </div>
 
-        {/* Plan Title - with glow effect */}
+        {/* Plan Title - STRONG neon glow */}
         <h1
           className="text-center text-[44px] font-black italic leading-tight tracking-wider text-pt-accent uppercase"
-          style={{
-            textShadow:
-              "0 0 20px rgba(219,254,83,0.6), 0 0 40px rgba(219,254,83,0.3), 0 0 80px rgba(219,254,83,0.15)",
-          }}
+          style={{ textShadow: GLOW_GREEN }}
         >
           PLAN DE
           <br />
@@ -46,23 +49,31 @@ export function WorkoutDayCard({
         </h1>
         <h2
           className="mt-2 text-center text-[34px] font-black italic tracking-widest text-pt-accent uppercase"
-          style={{
-            textShadow:
-              "0 0 15px rgba(219,254,83,0.5), 0 0 30px rgba(219,254,83,0.25)",
-          }}
+          style={{ textShadow: GLOW_GREEN }}
         >
           SEMANA {weekNumber}
         </h2>
       </div>
 
-      {/* Day Bar - White bg for day, green for muscle group */}
-      <div className="mx-14 mt-4 flex items-stretch">
-        <div className="flex items-center bg-white px-7 py-4">
+      {/* Day Bar - Chevron/diagonal cut between white and green */}
+      <div className="relative mx-14 mt-4 flex h-[60px] items-stretch">
+        {/* White section (Dia X) */}
+        <div className="relative z-10 flex items-center bg-white px-7 pr-10">
           <span className="text-[22px] font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
+          {/* Diagonal chevron - white triangle overlapping green */}
+          <div
+            className="absolute top-0 right-0 h-full"
+            style={{
+              width: 30,
+              background:
+                "linear-gradient(to bottom right, white 50%, transparent 50%)",
+            }}
+          />
         </div>
-        <div className="flex flex-1 items-center justify-center bg-pt-accent px-10 py-4">
+        {/* Green section (Muscle group) - shifted left to sit behind chevron */}
+        <div className="flex flex-1 items-center justify-center bg-pt-accent px-10">
           <span className="text-[26px] font-extrabold tracking-wider text-black uppercase">
             {day.muscleGroup}
           </span>
@@ -71,7 +82,7 @@ export function WorkoutDayCard({
 
       {/* Exercise Table */}
       <div className="mx-14 mt-6">
-        {/* Table Header - GREEN bg, black text, white thick borders */}
+        {/* Table Header - GREEN bg, black text, white borders */}
         <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] border-[3px] border-white bg-pt-accent text-center">
           <div className="border-[3px] border-white px-4 py-4 text-center">
             <span className="text-[20px] font-extrabold tracking-wide text-black uppercase">
@@ -107,7 +118,7 @@ export function WorkoutDayCard({
           </div>
         </div>
 
-        {/* Table Rows - white thick borders */}
+        {/* Table Rows */}
         {day.exercises.map((exercise) => (
           <div
             key={exercise.id}
@@ -128,8 +139,8 @@ export function WorkoutDayCard({
                 {exercise.reps}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
-              <span className="text-[22px] font-bold text-white">
+            <div className="flex items-center justify-center border-[3px] border-white bg-pt-accent/10 px-2 py-5">
+              <span className="text-[22px] font-bold text-pt-accent">
                 {exercise.restTime}
               </span>
             </div>
@@ -152,18 +163,15 @@ export function WorkoutDayCard({
 
       {/* Cardio Section */}
       <div className="mx-14 mb-6 flex flex-col items-center">
-        {/* Glowing CARDIO title - WHITE text with white glow */}
+        {/* Glowing CARDIO title - STRONG white neon glow */}
         <h3
           className="mb-6 text-[56px] font-black italic tracking-widest text-white uppercase"
-          style={{
-            textShadow:
-              "0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.5), 0 0 100px rgba(255,255,255,0.25)",
-          }}
+          style={{ textShadow: GLOW_WHITE }}
         >
           CARDIO
         </h3>
 
-        {/* Cardio Description Box - WHITE solid border */}
+        {/* Cardio Description Box */}
         <div className="min-h-[140px] w-full rounded-sm border-[3px] border-solid border-white px-8 py-6">
           <p className="text-[22px] leading-relaxed text-white">
             {day.cardio.description}

@@ -55,23 +55,22 @@ export function WorkoutDayCard({
         </h2>
       </div>
 
-      {/* Day Bar - Arrow/chevron cut from white into green */}
-      <div className="relative mx-14 mt-4 flex h-[60px] items-stretch">
-        {/* White section (Dia X) with arrow shape via clip-path */}
-        <div
-          className="relative z-10 flex items-center bg-white pl-7 pr-12"
-          style={{
-            clipPath: "polygon(0 0, calc(100% - 30px) 0, 100% 50%, calc(100% - 30px) 100%, 0 100%)",
-          }}
-        >
+      {/* Day Bar - White rect + Green arrow/chevron pointing right */}
+      <div className="relative mx-14 mt-4 flex h-[60px]">
+        {/* White rectangle (Dia X) - simple rect, no clip */}
+        <div className="flex items-center bg-white px-7">
           <span className="text-[22px] font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
         </div>
-        {/* Green section (Muscle group) - pulled left to overlap behind arrow */}
+        {/* Green arrow shape - starts flat on left, ends in arrow point on right */}
         <div
-          className="flex flex-1 items-center justify-center bg-pt-accent px-10"
-          style={{ marginLeft: -30 }}
+          className="flex items-center justify-center px-14"
+          style={{
+            backgroundColor: "#DBFE53",
+            clipPath:
+              "polygon(0 0, calc(100% - 35px) 0, 100% 50%, calc(100% - 35px) 100%, 0 100%)",
+          }}
         >
           <span className="text-[26px] font-extrabold tracking-wider text-black uppercase">
             {day.muscleGroup}

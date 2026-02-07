@@ -55,22 +55,21 @@ export function WorkoutDayCard({
         </h2>
       </div>
 
-      {/* Day Bar - White rect + Green with arrow point on LEFT side */}
+      {/* Day Bar - White fills into green arrow point on left */}
       <div className="relative mx-14 mt-4 flex h-[60px]">
-        {/* White rectangle (Dia X) */}
-        <div className="flex items-center bg-white px-7">
+        {/* White rectangle extends into the green arrow gap */}
+        <div className="flex items-center bg-white px-7" style={{ marginRight: -30 }}>
           <span className="text-[22px] font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
         </div>
-        {/* Green section - left side has arrow/chevron point, right side is flat */}
+        {/* Green section - arrow/chevron point on left, flat on right */}
         <div
-          className="flex items-center justify-center px-14"
+          className="relative z-10 flex items-center justify-center px-14"
           style={{
             backgroundColor: "#DBFE53",
             clipPath:
               "polygon(30px 0, 100% 0, 100% 100%, 30px 100%, 0 50%)",
-            marginLeft: -5,
           }}
         >
           <span className="ml-4 text-[26px] font-extrabold tracking-wider text-black uppercase">

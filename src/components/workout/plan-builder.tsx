@@ -266,7 +266,7 @@ export function PlanBuilder() {
           doc.addPage([1080, 1920]);
         }
 
-        doc.addImage(img.dataUrl, "PNG", 0, 0, 1080, 1920);
+        doc.addImage(img.dataUrl, "JPEG", 0, 0, 1080, 1920, undefined, "MEDIUM");
       }
 
       doc.save("plan-de-entrenamiento.pdf");

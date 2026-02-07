@@ -18,7 +18,7 @@ type ImageCaptureResult =
 const DEFAULT_OPTIONS = {
   width: 1080,
   height: 1920,
-  pixelRatio: 2,
+  pixelRatio: 1,
   backgroundColor: "#0a0a0a",
 } as const;
 

@@ -46,7 +46,7 @@ describe("captureNode", () => {
     expect(mockToPng).toHaveBeenCalledWith(mockNode, {
       width: 1080,
       height: 1920,
-      pixelRatio: 2,
+      pixelRatio: 1,
       backgroundColor: "#0a0a0a",
       cacheBust: true,
     });
@@ -60,7 +60,7 @@ describe("captureNode", () => {
     expect(mockToPng).toHaveBeenCalledWith(mockNode, {
       width: 800,
       height: 600,
-      pixelRatio: 2,
+      pixelRatio: 1,
       backgroundColor: "#0a0a0a",
       cacheBust: true,
     });

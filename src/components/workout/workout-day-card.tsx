@@ -32,11 +32,23 @@ export function WorkoutDayCard({
           />
         </div>
 
-        {/* Plan Title */}
-        <h1 className="text-center text-[28px] font-black italic tracking-wider text-pt-accent uppercase">
+        {/* Plan Title - with glow effect */}
+        <h1
+          className="text-center text-[28px] font-black italic tracking-wider text-pt-accent uppercase"
+          style={{
+            textShadow:
+              "0 0 20px rgba(219,254,83,0.6), 0 0 40px rgba(219,254,83,0.3), 0 0 80px rgba(219,254,83,0.15)",
+          }}
+        >
           PLAN DE ENTRENAMIENTO
         </h1>
-        <h2 className="mt-1 text-center text-[22px] font-black italic tracking-widest text-pt-accent uppercase">
+        <h2
+          className="mt-1 text-center text-[22px] font-black italic tracking-widest text-pt-accent uppercase"
+          style={{
+            textShadow:
+              "0 0 15px rgba(219,254,83,0.5), 0 0 30px rgba(219,254,83,0.25)",
+          }}
+        >
           SEMANA {weekNumber}
         </h2>
       </div>

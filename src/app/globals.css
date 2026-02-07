@@ -7,6 +7,7 @@
   --pt-bg-card: #1a1a1a;
   --pt-bg-dark: #0a0a0a;
   --pt-text-muted: #a0a0a0;
+  --pt-gray: #8A9597;
   --pt-border: #333333;
 }
 
@@ -17,6 +18,7 @@
   --color-pt-card: var(--pt-bg-card);
   --color-pt-dark: var(--pt-bg-dark);
   --color-pt-muted: var(--pt-text-muted);
+  --color-pt-gray: var(--pt-gray);
   --color-pt-border: var(--pt-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

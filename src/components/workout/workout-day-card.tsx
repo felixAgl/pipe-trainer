@@ -23,11 +23,13 @@ export function WorkoutDayCard({
       className="flex h-[1920px] w-[1080px] flex-col font-sans text-white"
       style={{
         background: [
-          "radial-gradient(ellipse 80% 35% at 50% 52%, rgba(90,82,70,0.45) 0%, rgba(70,63,52,0.3) 35%, transparent 70%)",
-          "radial-gradient(ellipse 60% 25% at 45% 58%, rgba(75,68,55,0.35) 0%, transparent 60%)",
-          "radial-gradient(ellipse 70% 30% at 55% 48%, rgba(80,72,60,0.3) 0%, transparent 65%)",
-          "radial-gradient(ellipse 100% 80% at 50% 55%, rgba(50,45,38,0.7) 0%, rgba(35,32,27,0.5) 30%, rgba(20,18,15,0.3) 55%, transparent 80%)",
-          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 15%, #1a1714 30%, #2c2720 45%, #363127 55%, #2c2720 68%, #1a1714 82%, #0a0a0a 100%)",
+          "radial-gradient(ellipse 85% 40% at 50% 52%, rgba(120,108,90,0.5) 0%, rgba(90,80,65,0.35) 30%, transparent 65%)",
+          "radial-gradient(ellipse 65% 30% at 42% 58%, rgba(100,90,72,0.4) 0%, transparent 55%)",
+          "radial-gradient(ellipse 70% 35% at 58% 46%, rgba(110,98,78,0.35) 0%, transparent 60%)",
+          "radial-gradient(ellipse 50% 20% at 35% 50%, rgba(95,85,68,0.3) 0%, transparent 50%)",
+          "radial-gradient(ellipse 45% 18% at 65% 54%, rgba(105,93,75,0.28) 0%, transparent 48%)",
+          "radial-gradient(ellipse 110% 90% at 50% 52%, rgba(65,58,46,0.8) 0%, rgba(45,40,32,0.6) 25%, rgba(28,25,20,0.35) 50%, transparent 75%)",
+          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 10%, #1e1a15 25%, #35302a 42%, #413a30 52%, #35302a 62%, #1e1a15 78%, #0a0a0a 95%, #0a0a0a 100%)",
         ].join(", "),
       }}
     >

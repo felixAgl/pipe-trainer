@@ -182,8 +182,8 @@ export function WorkoutDayCard({
         </h3>
 
         {/* Cardio Description Box */}
-        <div className="min-h-[140px] w-full rounded-sm border-[3px] border-solid border-white px-8 py-6">
-          <p className="text-[22px] leading-relaxed text-white">
+        <div className="min-h-[220px] w-full rounded-sm border-[3px] border-solid border-white px-10 py-8">
+          <p className="text-[24px] leading-relaxed text-white">
             {day.cardio.description}
           </p>
         </div>

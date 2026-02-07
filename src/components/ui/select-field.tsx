@@ -27,7 +27,7 @@ export function SelectField({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-pt-border bg-pt-card px-3 py-2 text-sm text-white focus:border-pt-accent focus:outline-none"
+        className="w-full rounded-md border border-pt-border bg-pt-card px-2 py-2 text-sm text-white focus:border-pt-accent focus:outline-none sm:px-3"
       >
         {options.map((option) => (
           <option key={option} value={option}>

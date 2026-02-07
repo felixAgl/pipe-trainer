@@ -44,9 +44,9 @@ export function ExerciseRow({
   }
 
   return (
-    <div className="grid grid-cols-[2fr_0.8fr_0.8fr_1fr_0.8fr_0.8fr_auto] items-end gap-2">
-      {/* Exercise Name with autocomplete */}
-      <div className="relative flex flex-col gap-1">
+    <div className="flex flex-col gap-2 rounded-md border border-pt-border/50 p-3 md:flex-row md:items-end md:gap-2 md:border-0 md:p-0">
+      {/* Exercise Name with autocomplete - full width on mobile, 2fr on desktop */}
+      <div className="relative flex flex-col gap-1 md:flex-[2]">
         <label className="text-xs font-medium text-pt-muted uppercase tracking-wide">
           Ejercicio
         </label>
@@ -60,7 +60,6 @@ export function ExerciseRow({
             setShowSuggestions(filtered.length > 0);
           }}
           onBlur={() => {
-            // Delay to allow click on suggestion
             setTimeout(() => setShowSuggestions(false), 200);
           }}
           placeholder="Nombre del ejercicio"
@@ -82,56 +81,59 @@ export function ExerciseRow({
         )}
       </div>
 
-      <SelectField
-        label="Series"
-        value={exercise.series}
-        options={[...SERIES_OPTIONS]}
-        onChange={(v) =>
-          onChange({ ...exercise, series: Number(v) as Exercise["series"] })
-        }
-      />
+      {/* Selectors grid - 3 cols on mobile, inline on desktop */}
+      <div className="grid grid-cols-3 gap-2 md:flex md:flex-[4] md:gap-2">
+        <SelectField
+          label="Series"
+          value={exercise.series}
+          options={[...SERIES_OPTIONS]}
+          onChange={(v) =>
+            onChange({ ...exercise, series: Number(v) as Exercise["series"] })
+          }
+        />
 
-      <SelectField
-        label="Reps"
-        value={exercise.reps}
-        options={[...REPS_OPTIONS]}
-        onChange={(v) => onChange({ ...exercise, reps: Number(v) })}
-      />
+        <SelectField
+          label="Reps"
+          value={exercise.reps}
+          options={[...REPS_OPTIONS]}
+          onChange={(v) => onChange({ ...exercise, reps: Number(v) })}
+        />
 
-      <SelectField
-        label="Descanso"
-        value={exercise.restTime}
-        options={[...REST_TIME_OPTIONS]}
-        onChange={(v) => onChange({ ...exercise, restTime: v as RestTime })}
-      />
+        <SelectField
+          label="Descanso"
+          value={exercise.restTime}
+          options={[...REST_TIME_OPTIONS]}
+          onChange={(v) => onChange({ ...exercise, restTime: v as RestTime })}
+        />
 
-      <SelectField
-        label="RIR"
-        value={exercise.rir}
-        options={[...RIR_OPTIONS]}
-        onChange={(v) =>
-          onChange({ ...exercise, rir: Number(v) as Exercise["rir"] })
-        }
-      />
+        <SelectField
+          label="RIR"
+          value={exercise.rir}
+          options={[...RIR_OPTIONS]}
+          onChange={(v) =>
+            onChange({ ...exercise, rir: Number(v) as Exercise["rir"] })
+          }
+        />
 
-      <SelectField
-        label="RPE"
-        value={exercise.rpe}
-        options={[...RPE_OPTIONS]}
-        onChange={(v) =>
-          onChange({ ...exercise, rpe: Number(v) as Exercise["rpe"] })
-        }
-      />
+        <SelectField
+          label="RPE"
+          value={exercise.rpe}
+          options={[...RPE_OPTIONS]}
+          onChange={(v) =>
+            onChange({ ...exercise, rpe: Number(v) as Exercise["rpe"] })
+          }
+        />
 
-      <div className="flex items-end pb-0.5">
-        <Button
-          variant="danger"
-          onClick={onRemove}
-          disabled={!canRemove}
-          className="px-3 py-2 text-xs"
-        >
-          X
-        </Button>
+        <div className="flex items-end">
+          <Button
+            variant="danger"
+            onClick={onRemove}
+            disabled={!canRemove}
+            className="w-full px-3 py-2 text-xs md:w-auto"
+          >
+            X
+          </Button>
+        </div>
       </div>
     </div>
   );

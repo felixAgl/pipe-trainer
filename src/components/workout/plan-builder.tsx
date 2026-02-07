@@ -1,20 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { WorkoutDay, WorkoutPlan, WorkoutWeek } from "@/types/workout";
-import type { HCTICredentials } from "@/lib/hcti-client";
 import { DayEditor } from "@/components/workout/day-editor";
 import { WorkoutDayCard } from "@/components/workout/workout-day-card";
 import { Button } from "@/components/ui/button";
-import { InputField } from "@/components/ui/input-field";
 import { createWorkoutDay, createWorkoutPlan } from "@/lib/plan-factory";
-import { buildWorkoutDayHTML, buildWorkoutDayCSS } from "@/lib/template-builder";
-import { generateImage } from "@/lib/hcti-client";
+import { captureNode } from "@/lib/image-capture";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEYS = {
   PLAN: "pipe-trainer-plan",
-  CREDENTIALS: "pipe-trainer-credentials",
 } as const;
 
 interface GeneratedImage {
@@ -22,16 +18,12 @@ interface GeneratedImage {
   weekNumber: number;
   dayLabel: string;
   muscleGroup: string;
-  url: string;
+  dataUrl: string;
 }
 
-function loadCredentials(): HCTICredentials {
-  if (typeof window === "undefined") return { userId: "", apiKey: "" };
-  const saved = localStorage.getItem(STORAGE_KEYS.CREDENTIALS);
-  if (saved) {
-    return JSON.parse(saved) as HCTICredentials;
-  }
-  return { userId: "", apiKey: "" };
+interface Toast {
+  message: string;
+  type: "success" | "error";
 }
 
 export function PlanBuilder() {
@@ -42,17 +34,31 @@ export function PlanBuilder() {
   const [generating, setGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [credentials, setCredentials] = useState<HCTICredentials>(loadCredentials);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const captureContainerRef = useRef<HTMLDivElement>(null);
 
   const currentWeek = plan.weeks[activeWeek];
   const currentDay = currentWeek?.days[activeDay];
 
-  // -- Credentials --
-  function handleSaveCredentials() {
-    localStorage.setItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credentials));
-    setShowSettings(false);
-  }
+  // Auto-load plan from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
+      if (saved) {
+        setPlan(JSON.parse(saved) as WorkoutPlan);
+      }
+    } catch {
+      // Corrupted data, ignore and use default plan
+    }
+  }, []);
+
+  // Auto-dismiss toast after 3 seconds
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // -- Week Management --
   function handleAddWeek() {
@@ -128,36 +134,61 @@ export function PlanBuilder() {
     }
   }
 
-  // -- Client-side Image Generation --
-  async function generateDayImage(
+  // -- Client-side Image Capture --
+  async function captureDayImage(
     day: WorkoutDay,
     weekNumber: number
   ): Promise<GeneratedImage | null> {
-    const html = buildWorkoutDayHTML(day, { weekNumber });
-    const css = buildWorkoutDayCSS();
+    const container = captureContainerRef.current;
+    if (!container) throw new Error("Capture container not found");
 
-    const result = await generateImage({ html, css }, credentials);
+    // Render the card into the offscreen container
+    const { createRoot } = await import("react-dom/client");
 
-    if (!result.success) {
-      throw new Error(result.error.error);
-    }
+    return new Promise((resolve, reject) => {
+      const root = createRoot(container);
 
-    return {
-      dayNumber: day.dayNumber,
-      weekNumber,
-      dayLabel: `S${weekNumber} - ${day.dayLabel}`,
-      muscleGroup: day.muscleGroup,
-      url: result.data.url,
-    };
+      root.render(
+        <WorkoutDayCard day={day} weekNumber={weekNumber} />
+      );
+
+      // Wait for render + fonts to settle
+      requestAnimationFrame(() => {
+        setTimeout(async () => {
+          try {
+            const cardNode = container.firstElementChild as HTMLElement;
+            if (!cardNode) {
+              root.unmount();
+              reject(new Error("Card not rendered"));
+              return;
+            }
+
+            const result = await captureNode(cardNode);
+
+            root.unmount();
+
+            if (!result.success) {
+              reject(new Error(result.error));
+              return;
+            }
+
+            resolve({
+              dayNumber: day.dayNumber,
+              weekNumber,
+              dayLabel: `S${weekNumber} - ${day.dayLabel}`,
+              muscleGroup: day.muscleGroup,
+              dataUrl: result.data.dataUrl,
+            });
+          } catch (err) {
+            root.unmount();
+            reject(err);
+          }
+        }, 200);
+      });
+    });
   }
 
   async function handleGenerateAll() {
-    if (!credentials.userId || !credentials.apiKey) {
-      setError("Configure your HCTI API credentials first (click Settings)");
-      setShowSettings(true);
-      return;
-    }
-
     setGenerating(true);
     setError(null);
     const allImages: GeneratedImage[] = [];
@@ -165,11 +196,11 @@ export function PlanBuilder() {
     for (const week of plan.weeks) {
       for (const day of week.days) {
         try {
-          const img = await generateDayImage(day, week.weekNumber);
+          const img = await captureDayImage(day, week.weekNumber);
           if (img) allImages.push(img);
         } catch (err) {
           setError(
-            `Error generating S${week.weekNumber} ${day.dayLabel}: ${err instanceof Error ? err.message : "Unknown error"}`
+            `Error generando S${week.weekNumber} ${day.dayLabel}: ${err instanceof Error ? err.message : "Error desconocido"}`
           );
           setGenerating(false);
           return;
@@ -179,22 +210,17 @@ export function PlanBuilder() {
 
     setGeneratedImages(allImages);
     setGenerating(false);
+    setToast({ message: `${allImages.length} imagenes generadas`, type: "success" });
   }
 
   async function handleGenerateDay(dayIndex: number) {
-    if (!credentials.userId || !credentials.apiKey) {
-      setError("Configure your HCTI API credentials first (click Settings)");
-      setShowSettings(true);
-      return;
-    }
-
     setGenerating(true);
     setError(null);
 
     const day = currentWeek.days[dayIndex];
 
     try {
-      const img = await generateDayImage(day, currentWeek.weekNumber);
+      const img = await captureDayImage(day, currentWeek.weekNumber);
       if (img) {
         setGeneratedImages((prev) => [
           ...prev.filter(
@@ -206,9 +232,10 @@ export function PlanBuilder() {
           ),
           img,
         ]);
+        setToast({ message: `${day.dayLabel} generada`, type: "success" });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error generating image");
+      setError(err instanceof Error ? err.message : "Error generando imagen");
     }
 
     setGenerating(false);
@@ -217,7 +244,7 @@ export function PlanBuilder() {
   // -- PDF Generation --
   async function handleDownloadPDF() {
     if (generatedImages.length === 0) {
-      setError("Generate images first before downloading PDF");
+      setError("Genera las imagenes primero antes de descargar el PDF");
       return;
     }
 
@@ -235,18 +262,17 @@ export function PlanBuilder() {
       for (let i = 0; i < generatedImages.length; i++) {
         const img = generatedImages[i];
 
-        const dataUrl = await imageUrlToDataURL(img.url, 1080, 1920);
-
         if (i > 0) {
           doc.addPage([1080, 1920]);
         }
 
-        doc.addImage(dataUrl, "PNG", 0, 0, 1080, 1920);
+        doc.addImage(img.dataUrl, "PNG", 0, 0, 1080, 1920);
       }
 
       doc.save("plan-de-entrenamiento.pdf");
+      setToast({ message: "PDF descargado", type: "success" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error generating PDF");
+      setError(err instanceof Error ? err.message : "Error generando PDF");
     }
 
     setGenerating(false);
@@ -254,293 +280,271 @@ export function PlanBuilder() {
 
   // -- Save/Load localStorage --
   function handleSavePlan() {
-    localStorage.setItem(STORAGE_KEYS.PLAN, JSON.stringify(plan));
-    setError(null);
+    try {
+      localStorage.setItem(STORAGE_KEYS.PLAN, JSON.stringify(plan));
+      setError(null);
+      setToast({ message: "Plan guardado", type: "success" });
+    } catch {
+      setToast({ message: "Error al guardar el plan", type: "error" });
+    }
   }
 
   function handleLoadPlan() {
-    const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
-    if (saved) {
-      setPlan(JSON.parse(saved) as WorkoutPlan);
-      setActiveWeek(0);
-      setActiveDay(0);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PLAN);
+      if (saved) {
+        setPlan(JSON.parse(saved) as WorkoutPlan);
+        setActiveWeek(0);
+        setActiveDay(0);
+        setToast({ message: "Plan cargado", type: "success" });
+      } else {
+        setToast({ message: "No hay plan guardado", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Error al cargar: datos corruptos", type: "error" });
     }
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 gap-6 p-6 xl:grid-cols-[1fr_500px]">
-      {/* Left Panel - Editor */}
-      <div className="flex flex-col gap-6">
-        {/* Top Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold text-white">
-            <span className="font-black italic text-pt-accent">PT</span>{" "}
-            Plan Builder
-          </h1>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => setShowSettings(!showSettings)}
-            >
-              Settings
-            </Button>
-            <Button variant="ghost" onClick={handleSavePlan}>
-              Guardar
-            </Button>
-            <Button variant="ghost" onClick={handleLoadPlan}>
-              Cargar
-            </Button>
-            <Button onClick={handleGenerateAll} disabled={generating}>
-              {generating ? "Generando..." : "Generar Todo"}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleDownloadPDF}
-              disabled={generating || generatedImages.length === 0}
-            >
-              Descargar PDF
-            </Button>
-          </div>
-        </div>
+    <>
+      {/* Offscreen capture container - hidden from view, full size for capture */}
+      <div
+        ref={captureContainerRef}
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          left: "-9999px",
+          top: 0,
+          width: 1080,
+          height: 1920,
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      />
 
-        {/* Settings Panel */}
-        {showSettings && (
-          <div className="rounded-lg border border-pt-border bg-pt-card p-4">
-            <h3 className="mb-3 text-sm font-bold text-pt-accent uppercase">
-              HCTI API Credentials
-            </h3>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <InputField
-                label="User ID"
-                value={credentials.userId}
-                onChange={(v) =>
-                  setCredentials({ ...credentials, userId: v })
-                }
-                placeholder="01KGV..."
-              />
-              <InputField
-                label="API Key"
-                value={credentials.apiKey}
-                onChange={(v) =>
-                  setCredentials({ ...credentials, apiKey: v })
-                }
-                placeholder="019c3..."
-              />
-            </div>
-            <div className="mt-3">
-              <Button onClick={handleSaveCredentials}>
-                Save Credentials
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={cn(
+            "fixed top-4 right-4 z-50 rounded-md px-4 py-2 text-sm font-medium shadow-lg transition-opacity",
+            toast.type === "success"
+              ? "bg-pt-accent text-black"
+              : "bg-red-900/90 text-red-200"
+          )}
+        >
+          {toast.message}
+        </div>
+      )}
+
+      <div className="grid min-h-screen grid-cols-1 gap-4 p-3 sm:gap-6 sm:p-6 xl:grid-cols-[1fr_500px]">
+        {/* Left Panel - Editor */}
+        <div className="flex flex-col gap-4 sm:gap-6">
+          {/* Top Controls */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+            <h1 className="text-xl font-bold text-white sm:text-2xl">
+              <span className="font-black italic text-pt-accent">PT</span>{" "}
+              Plan Builder
+            </h1>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <Button variant="ghost" onClick={handleSavePlan}>
+                Guardar
+              </Button>
+              <Button variant="ghost" onClick={handleLoadPlan}>
+                Cargar
+              </Button>
+              <Button onClick={handleGenerateAll} disabled={generating}>
+                {generating ? "Generando..." : "Generar Todo"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleDownloadPDF}
+                disabled={generating || generatedImages.length === 0}
+              >
+                Descargar PDF
               </Button>
             </div>
           </div>
-        )}
 
-        {error && (
-          <div className="rounded-md bg-red-900/50 px-4 py-2 text-sm text-red-300">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="rounded-md bg-red-900/50 px-4 py-2 text-sm text-red-300">
+              {error}
+            </div>
+          )}
 
-        {/* Week Tabs */}
-        <div className="flex flex-wrap items-center gap-2">
-          {plan.weeks.map((week, i) => (
-            <button
-              key={week.id}
-              onClick={() => {
-                setActiveWeek(i);
-                setActiveDay(0);
-              }}
-              className={cn(
-                "rounded-md px-4 py-2 text-sm font-semibold transition-colors",
-                activeWeek === i
-                  ? "bg-pt-accent text-black"
-                  : "bg-pt-card text-pt-muted hover:text-white"
-              )}
-            >
-              Semana {week.weekNumber}
-            </button>
-          ))}
-          <Button variant="ghost" onClick={handleAddWeek} className="text-xs">
-            + Semana
-          </Button>
-          {plan.weeks.length > 1 && (
+          {/* Week Tabs */}
+          <div className="flex flex-wrap items-center gap-2">
+            {plan.weeks.map((week, i) => (
+              <button
+                key={week.id}
+                onClick={() => {
+                  setActiveWeek(i);
+                  setActiveDay(0);
+                }}
+                className={cn(
+                  "rounded-md px-4 py-2 text-sm font-semibold transition-colors",
+                  activeWeek === i
+                    ? "bg-pt-accent text-black"
+                    : "bg-pt-card text-pt-muted hover:text-white"
+                )}
+              >
+                Semana {week.weekNumber}
+              </button>
+            ))}
+            <Button variant="ghost" onClick={handleAddWeek} className="text-xs">
+              + Semana
+            </Button>
+            {plan.weeks.length > 1 && (
+              <Button
+                variant="ghost"
+                onClick={() => handleRemoveWeek(activeWeek)}
+                className="text-xs text-red-400"
+              >
+                - Semana
+              </Button>
+            )}
             <Button
               variant="ghost"
-              onClick={() => handleRemoveWeek(activeWeek)}
-              className="text-xs text-red-400"
+              onClick={() => handleDuplicateWeek(activeWeek)}
+              className="text-xs"
             >
-              - Semana
+              Duplicar Semana
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            onClick={() => handleDuplicateWeek(activeWeek)}
-            className="text-xs"
-          >
-            Duplicar Semana
-          </Button>
-        </div>
+          </div>
 
-        {/* Day Tabs */}
-        <div className="flex flex-wrap items-center gap-2">
-          {currentWeek?.days.map((day, i) => (
-            <button
-              key={day.id}
-              onClick={() => setActiveDay(i)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
-                activeDay === i
-                  ? "bg-pt-accent text-black"
-                  : "bg-pt-card text-pt-muted hover:text-white"
-              )}
+          {/* Day Tabs */}
+          <div className="flex flex-wrap items-center gap-2">
+            {currentWeek?.days.map((day, i) => (
+              <button
+                key={day.id}
+                onClick={() => setActiveDay(i)}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+                  activeDay === i
+                    ? "bg-pt-accent text-black"
+                    : "bg-pt-card text-pt-muted hover:text-white"
+                )}
+              >
+                {day.dayLabel}
+                {day.muscleGroup && ` - ${day.muscleGroup}`}
+              </button>
+            ))}
+            {currentWeek && currentWeek.days.length < 7 && (
+              <Button variant="ghost" onClick={handleAddDay} className="text-xs">
+                + Dia
+              </Button>
+            )}
+          </div>
+
+          {/* Day Editor */}
+          {currentDay && (
+            <DayEditor
+              key={currentDay.id}
+              day={currentDay}
+              onChange={(updated) => handleDayChange(activeDay, updated)}
+              onRemove={() => handleRemoveDay(activeDay)}
+              canRemove={currentWeek.days.length > 1}
+            />
+          )}
+
+          {/* Generate single day button */}
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => handleGenerateDay(activeDay)}
+              disabled={generating}
             >
-              {day.dayLabel}
-              {day.muscleGroup && ` - ${day.muscleGroup}`}
-            </button>
-          ))}
-          {currentWeek && currentWeek.days.length < 7 && (
-            <Button variant="ghost" onClick={handleAddDay} className="text-xs">
-              + Dia
+              {generating
+                ? "Generando..."
+                : `Generar ${currentDay?.dayLabel ?? "Dia"}`}
             </Button>
-          )}
-        </div>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                setPreviewDay(previewDay === activeDay ? null : activeDay)
+              }
+            >
+              {previewDay === activeDay ? "Ocultar Preview" : "Ver Preview"}
+            </Button>
+          </div>
 
-        {/* Day Editor */}
-        {currentDay && (
-          <DayEditor
-            key={currentDay.id}
-            day={currentDay}
-            onChange={(updated) => handleDayChange(activeDay, updated)}
-            onRemove={() => handleRemoveDay(activeDay)}
-            canRemove={currentWeek.days.length > 1}
-          />
-        )}
-
-        {/* Generate single day button */}
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => handleGenerateDay(activeDay)}
-            disabled={generating}
-          >
-            {generating
-              ? "Generando..."
-              : `Generar ${currentDay?.dayLabel ?? "Dia"}`}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() =>
-              setPreviewDay(previewDay === activeDay ? null : activeDay)
-            }
-          >
-            {previewDay === activeDay ? "Ocultar Preview" : "Ver Preview"}
-          </Button>
-        </div>
-
-        {/* Generated Images Gallery */}
-        {generatedImages.length > 0 && (
-          <div className="mt-4">
-            <h3 className="mb-3 text-lg font-bold text-white">
-              Imagenes Generadas ({generatedImages.length})
-            </h3>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {generatedImages.map((img) => (
-                <div
-                  key={`${img.weekNumber}-${img.dayNumber}`}
-                  className="flex flex-col gap-2"
-                >
-                  <a
-                    href={img.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+          {/* Generated Images Gallery */}
+          {generatedImages.length > 0 && (
+            <div className="mt-4">
+              <h3 className="mb-3 text-lg font-bold text-white">
+                Imagenes Generadas ({generatedImages.length})
+              </h3>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {generatedImages.map((img) => (
+                  <div
+                    key={`${img.weekNumber}-${img.dayNumber}`}
+                    className="flex flex-col gap-2"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.url}
-                      alt={`${img.dayLabel} - ${img.muscleGroup}`}
-                      className="rounded-md border border-pt-border"
-                    />
-                  </a>
-                  <span className="text-xs text-pt-muted">
-                    {img.dayLabel} - {img.muscleGroup}
-                  </span>
-                </div>
-              ))}
+                    <a
+                      href={img.dataUrl}
+                      download={`S${img.weekNumber}-${img.dayLabel}.png`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.dataUrl}
+                        alt={`${img.dayLabel} - ${img.muscleGroup}`}
+                        className="rounded-md border border-pt-border"
+                      />
+                    </a>
+                    <span className="text-xs text-pt-muted">
+                      {img.dayLabel} - {img.muscleGroup}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - Live Preview */}
+        <div className="hidden xl:block">
+          <div className="sticky top-6">
+            <h3 className="mb-3 text-sm font-bold text-pt-muted uppercase tracking-wide">
+              Preview en vivo
+            </h3>
+            <div
+              className="overflow-hidden rounded-lg border border-pt-border"
+              style={{ width: 486, height: 864 }}
+            >
+              <div
+                className="origin-top-left"
+                style={{ transform: "scale(0.45)", width: 1080 }}
+              >
+                {currentDay && currentWeek && (
+                  <WorkoutDayCard
+                    day={currentDay}
+                    weekNumber={currentWeek.weekNumber}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Right Panel - Live Preview */}
-      <div className="hidden xl:block">
-        <div className="sticky top-6">
-          <h3 className="mb-3 text-sm font-bold text-pt-muted uppercase tracking-wide">
-            Preview en vivo
-          </h3>
-          <div
-            className="overflow-hidden rounded-lg border border-pt-border"
-            style={{ width: 486, height: 864 }}
-          >
+        {/* Mobile Preview (full width) */}
+        {previewDay !== null && currentDay && (
+          <div className="xl:hidden">
             <div
-              className="origin-top-left"
-              style={{ transform: "scale(0.45)", width: 1080 }}
+              className="overflow-hidden rounded-lg border border-pt-border"
+              style={{ maxWidth: "100%", aspectRatio: "1080/1920" }}
             >
-              {currentDay && currentWeek && (
+              <div
+                className="origin-top-left"
+                style={{ transform: "scale(0.33)", width: 1080, transformOrigin: "top left" }}
+              >
                 <WorkoutDayCard
                   day={currentDay}
                   weekNumber={currentWeek.weekNumber}
                 />
-              )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Mobile Preview (full width) */}
-      {previewDay !== null && currentDay && (
-        <div className="xl:hidden">
-          <div
-            className="overflow-hidden rounded-lg border border-pt-border"
-            style={{ width: "100%", maxWidth: 540, height: 700 }}
-          >
-            <div
-              className="origin-top-left"
-              style={{ transform: "scale(0.5)", width: 1080 }}
-            >
-              <WorkoutDayCard
-                day={currentDay}
-                weekNumber={currentWeek.weekNumber}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
-}
-
-function imageUrlToDataURL(
-  url: string,
-  width: number,
-  height: number
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("Could not get canvas context"));
-        return;
-      }
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/png"));
-    };
-    img.onerror = () =>
-      reject(new Error(`Failed to load image: ${url}`));
-    img.src = url;
-  });
 }

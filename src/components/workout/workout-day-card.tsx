@@ -1,4 +1,5 @@
 import type { WorkoutDay } from "@/types/workout";
+import { PT_ISOTIPO_DATA_URL } from "@/lib/brand-assets";
 
 interface WorkoutDayCardProps {
   day: WorkoutDay;
@@ -21,11 +22,14 @@ export function WorkoutDayCard({
     >
       {/* Header: Logo + Title */}
       <div className="flex flex-col items-center px-10 pt-8 pb-2">
-        {/* PT Logo */}
+        {/* PT Isotipo Logo */}
         <div className="mb-1 self-start">
-          <span className="-tracking-wider text-[38px] font-black italic text-pt-accent">
-            PT
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PT_ISOTIPO_DATA_URL}
+            alt="PT"
+            style={{ height: 60, width: "auto" }}
+          />
         </div>
 
         {/* Plan Title */}

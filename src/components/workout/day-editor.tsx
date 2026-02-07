@@ -44,25 +44,24 @@ export function DayEditor({ day, onChange, onRemove, canRemove }: DayEditorProps
   }
 
   return (
-    <div className="rounded-lg border border-pt-border bg-pt-card/50 p-6">
+    <div className="rounded-lg border border-pt-border bg-pt-card/50 p-3 sm:p-6">
       {/* Day Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="rounded-md bg-pt-accent px-3 py-1 text-sm font-bold text-black">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <span className="w-fit rounded-md bg-pt-accent px-3 py-1 text-sm font-bold text-black">
             {day.dayLabel}
           </span>
           <InputField
             value={day.muscleGroup}
             onChange={handleMuscleGroupChange}
             placeholder="Grupo muscular (ej: PIERNA)"
-            className="w-64"
           />
         </div>
         <Button
           variant="danger"
           onClick={onRemove}
           disabled={!canRemove}
-          className="text-xs"
+          className="w-fit text-xs"
         >
           Eliminar Dia
         </Button>

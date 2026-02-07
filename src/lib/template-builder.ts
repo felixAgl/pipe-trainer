@@ -26,7 +26,7 @@ export function buildWorkoutDayHTML(
     .join("");
 
   return `
-    <div style="width: 1080px; min-height: 1920px; font-family: 'Inter', Arial, sans-serif; background: #0a0a0a; color: #fff; padding: 0; margin: 0; display: flex; flex-direction: column;">
+    <div style="width: 1080px; min-height: 1920px; font-family: 'Inter', Arial, sans-serif; background: linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 40%, #1a1a1a 60%, #222222 72%, #1a1a1a 85%, #0f0f0f 100%); color: #fff; padding: 0; margin: 0; display: flex; flex-direction: column;">
 
       <!-- Header -->
       <div style="padding: 32px 40px 8px 40px; display: flex; flex-direction: column; align-items: center;">

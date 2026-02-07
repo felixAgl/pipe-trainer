@@ -83,9 +83,11 @@ describe("buildWorkoutDayHTML", () => {
     expect(html).toContain("#ccff00");
   });
 
-  it("should use the dark background #0a0a0a", () => {
+  it("should use gradient background from dark to subtle gray", () => {
     const html = buildWorkoutDayHTML(MOCK_DAY, { weekNumber: 1 });
+    expect(html).toContain("linear-gradient");
     expect(html).toContain("#0a0a0a");
+    expect(html).toContain("#222222");
   });
 
   it("should include the PT logo text", () => {

@@ -12,7 +12,13 @@ export function WorkoutDayCard({
   coachHandle = "Pipetrainer_11",
 }: WorkoutDayCardProps) {
   return (
-    <div className="flex min-h-[1920px] w-[1080px] flex-col bg-pt-dark font-sans text-white">
+    <div
+      className="flex min-h-[1920px] w-[1080px] flex-col font-sans text-white"
+      style={{
+        background:
+          "linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 40%, #1a1a1a 60%, #222222 72%, #1a1a1a 85%, #0f0f0f 100%)",
+      }}
+    >
       {/* Header: Logo + Title */}
       <div className="flex flex-col items-center px-10 pt-8 pb-2">
         {/* PT Logo */}

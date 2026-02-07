@@ -36,7 +36,7 @@ export function PlanBuilder() {
   const [plan, setPlan] = useState<WorkoutPlan>(() => createWorkoutPlan(2, 5));
   const [activeWeek, setActiveWeek] = useState(0);
   const [activeDay, setActiveDay] = useState(0);
-  const [previewDay, setPreviewDay] = useState<number | null>(null);
+  const [previewDay, setPreviewDay] = useState<number | null>(0);
   const [generating, setGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [error, setError] = useState<string | null>(null);

@@ -479,13 +479,21 @@ export function PlanBuilder() {
           <h3 className="mb-3 text-sm font-bold text-pt-muted uppercase tracking-wide">
             Preview en vivo
           </h3>
-          <div className="origin-top-left scale-[0.45] overflow-hidden rounded-lg border border-pt-border">
-            {currentDay && currentWeek && (
-              <WorkoutDayCard
-                day={currentDay}
-                weekNumber={currentWeek.weekNumber}
-              />
-            )}
+          <div
+            className="overflow-hidden rounded-lg border border-pt-border"
+            style={{ width: 486, height: 864 }}
+          >
+            <div
+              className="origin-top-left"
+              style={{ transform: "scale(0.45)", width: 1080 }}
+            >
+              {currentDay && currentWeek && (
+                <WorkoutDayCard
+                  day={currentDay}
+                  weekNumber={currentWeek.weekNumber}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -493,11 +501,19 @@ export function PlanBuilder() {
       {/* Mobile Preview (full width) */}
       {previewDay !== null && currentDay && (
         <div className="xl:hidden">
-          <div className="origin-top-left scale-[0.35] overflow-hidden rounded-lg border border-pt-border sm:scale-[0.5]">
-            <WorkoutDayCard
-              day={currentDay}
-              weekNumber={currentWeek.weekNumber}
-            />
+          <div
+            className="overflow-hidden rounded-lg border border-pt-border"
+            style={{ width: "100%", maxWidth: 540, height: 700 }}
+          >
+            <div
+              className="origin-top-left"
+              style={{ transform: "scale(0.5)", width: 1080 }}
+            >
+              <WorkoutDayCard
+                day={currentDay}
+                weekNumber={currentWeek.weekNumber}
+              />
+            </div>
           </div>
         </div>
       )}

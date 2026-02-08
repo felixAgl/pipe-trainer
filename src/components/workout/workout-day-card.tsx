@@ -70,17 +70,17 @@ export function WorkoutDayCard({
         </h2>
       </div>
 
-      {/* Day Bar - White fills into green arrow point on left */}
-      <div className="relative mx-14 mt-4 flex h-[66px]">
+      {/* Day Bar - White + Green arrow, aligned to ~55% of table width */}
+      <div className="relative mx-14 mt-4 flex h-[66px]" style={{ width: "55%" }}>
         {/* White rectangle extends into the green arrow gap */}
-        <div className="flex items-center bg-white px-10 pr-14" style={{ marginRight: -34 }}>
+        <div className="flex shrink-0 items-center bg-white px-10 pr-14" style={{ marginRight: -34 }}>
           <span className="text-[24px] font-bold text-black whitespace-nowrap">
             {day.dayLabel}
           </span>
         </div>
-        {/* Green section - arrow/chevron point on left, flat on right */}
+        {/* Green section - arrow/chevron point on left, fills remaining width */}
         <div
-          className="relative z-10 flex items-center justify-center pl-12 pr-10"
+          className="relative z-10 flex flex-1 items-center justify-center pl-12 pr-10"
           style={{
             backgroundColor: "#DBFE53",
             clipPath:
@@ -95,74 +95,74 @@ export function WorkoutDayCard({
 
       {/* Exercise Table */}
       <div className="mx-14 mt-8">
-        {/* Table Header - GREEN bg, black text, white borders */}
-        <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] border-[3px] border-white bg-pt-accent text-center">
-          <div className="border-[3px] border-white px-4 py-4 text-center">
+        {/* Table Header - GREEN bg, black text, no internal borders */}
+        <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] bg-pt-accent text-center">
+          <div className="px-4 py-4 text-center">
             <span className="text-[20px] font-extrabold tracking-wide text-black uppercase">
               Ejercicios
             </span>
           </div>
-          <div className="border-[3px] border-white px-2 py-4">
+          <div className="px-2 py-4">
             <span className="text-[20px] font-extrabold tracking-wide text-black uppercase">
               Series
             </span>
           </div>
-          <div className="border-[3px] border-white px-2 py-4">
+          <div className="px-2 py-4">
             <span className="text-[20px] font-extrabold tracking-wide text-black uppercase">
               Reps
             </span>
           </div>
-          <div className="border-[3px] border-white px-2 py-4">
+          <div className="px-2 py-4">
             <span className="text-[17px] font-extrabold leading-tight tracking-wide text-black uppercase">
               Tiempo
               <br />
               Descanso
             </span>
           </div>
-          <div className="border-[3px] border-white px-2 py-4">
+          <div className="px-2 py-4">
             <span className="text-[20px] font-extrabold tracking-wide text-black uppercase">
               RIR
             </span>
           </div>
-          <div className="border-[3px] border-white px-2 py-4">
+          <div className="px-2 py-4">
             <span className="text-[20px] font-extrabold tracking-wide text-black uppercase">
               RPE
             </span>
           </div>
         </div>
 
-        {/* Table Rows */}
+        {/* Table Rows - thin subtle borders */}
         {day.exercises.map((exercise) => (
           <div
             key={exercise.id}
-            className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] text-center"
+            className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_0.8fr_0.8fr] border-b border-white/20 text-center"
           >
-            <div className="flex items-center justify-center border-[3px] border-white px-4 py-5">
+            <div className="flex items-center justify-center border-r border-white/20 px-4 py-5">
               <span className="text-[22px] font-medium text-white">
                 {exercise.name}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
+            <div className="flex items-center justify-center border-r border-white/20 px-2 py-5">
               <span className="text-[22px] font-bold text-white">
                 {exercise.series}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
+            <div className="flex items-center justify-center border-r border-white/20 px-2 py-5">
               <span className="text-[22px] font-bold text-white">
                 {exercise.reps}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
-              <span className="text-[22px] font-bold text-pt-accent">
+            <div className="flex items-center justify-center border-r border-white/20 px-2 py-5">
+              <span className="text-[22px] font-bold text-white">
                 {exercise.restTime}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
+            <div className="flex items-center justify-center border-r border-white/20 px-2 py-5">
               <span className="text-[22px] font-bold text-white">
                 {exercise.rir}
               </span>
             </div>
-            <div className="flex items-center justify-center border-[3px] border-white px-2 py-5">
+            <div className="flex items-center justify-center px-2 py-5">
               <span className="text-[22px] font-bold text-white">
                 {exercise.rpe}
               </span>

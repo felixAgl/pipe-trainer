@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   description:
     "Genera planes de entrenamiento personalizados para tus clientes. Coaching fitness profesional.",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/pipe-trainer/favicon.ico",
+    apple: "/pipe-trainer/apple-touch-icon.png",
   },
 };
 
